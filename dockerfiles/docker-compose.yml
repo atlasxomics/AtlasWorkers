@@ -1,0 +1,65 @@
+
+version: "3.7"
+
+volumes:
+  workingdir: 
+    driver: local
+
+services:
+  core-worker:
+    container_name: atx-cloud
+    working_dir: $HOME/atx-workers/workers
+    # network_mode : host
+    networks:
+      - atx-cloud
+    image: atx-cloud
+    build: . 
+    user: 0:0
+    ipc: host
+    restart: always
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - /etc/group:/etc/group:ro
+      - /etc/passwd:/etc/passwd:ro
+      - /etc/shadow:/etc/shadow:ro
+      - /etc/sudoers:/stc/sudoers:ro
+      - /etc/sudoers.d:/etc/sudoers.d:ro 
+      - $HOME:$HOME
+    environment:
+      - TZ=America/New_York
+      - RABBITMQ_HOST=root:atx!cloud!scalphunter@api.atlasxomics.com
+      - REDIS_HOST=:atx!cloud!scalphunter@api.atlasxomics.com
+    command: celery -A core worker -n ${HOSTNAME}_${TS} -Q atxcloud --concurrency=4 --loglevel=INFO --max-tasks-per-child=1
+
+  gene-matrix-worker:
+    container_name: atx-cloud
+    working_dir: $HOME/atx-workers/workers
+    # network_mode : host
+    networks:
+      - atx-cloud
+    image: atx-cloud
+    build: . 
+    user: 0:0
+    ipc: host
+    restart: always
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - /etc/group:/etc/group:ro
+      - /etc/passwd:/etc/passwd:ro
+      - /etc/shadow:/etc/shadow:ro
+      - /etc/sudoers:/stc/sudoers:ro
+      - /etc/sudoers.d:/etc/sudoers.d:ro 
+      - $HOME:$HOME
+    environment:
+      - TZ=America/New_York
+      - RABBITMQ_HOST=root:atx!cloud!scalphunter@api.atlasxomics.com
+      - REDIS_HOST=:atx!cloud!scalphunter@api.atlasxomics.com
+    command: celery -A gene_matrix worker -n ${HOSTNAME}_${TS} -Q atxcloud --concurrency=4 --loglevel=INFO --max-tasks-per-child=1
+networks:
+  atx-cloud:
+    external: true
+
+networks:
+  atx-cloud:
+    external: true
+

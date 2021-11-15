@@ -1,0 +1,10 @@
+TEMP_DIRECTORY: /home/ubuntu/app_data/cache
+
+#AWS
+## default 
+AWS_ACCESS_KEY_ID: null
+AWS_SECRET_ACCESS_KEY: null
+AWS_DEFAULT_REGION: null
+
+## S3
+S3_BUCKET_NAME: atx-cloud-dev
