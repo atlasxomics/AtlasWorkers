@@ -10,8 +10,6 @@ services:
     container_name: core-worker
     working_dir: $HOME/atx-workers/workers
     # network_mode : host
-    networks:
-      - atx-cloud
     image: atx-cloud
     build: . 
     user: 0:0
@@ -35,8 +33,6 @@ services:
     container_name: gene-worker
     working_dir: $HOME/atx-workers/workers
     # network_mode : host
-    networks:
-      - atx-cloud
     image: atx-cloud
     build: . 
     user: 0:0
@@ -56,7 +52,5 @@ services:
       - REDIS_HOST=:atx!cloud!scalphunter@api.atlasxomics.com
     command: celery -A gene worker -n gene_${HOSTNAME}_${TS} -Q atxcloud_gene --concurrency=4 --loglevel=INFO
 
-networks:
-  atx-cloud:
-    external: true
+
 
