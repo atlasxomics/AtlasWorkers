@@ -36,3 +36,26 @@ class AWS_S3:
         self.aws_s3.download_fileobj(self.bucket_name,filename,f)
         f.close()
         return str(temp_outpath)
+
+    def getFileList(self,root_path): #get all pages
+        bucket_name = self.bucket_name
+        paginator=self.aws_s3.get_paginator('list_objects')
+        operation_parameters = {'Bucket': bucket_name,
+                                'Prefix': root_path}
+        page_iterator=paginator.paginate(**operation_parameters)
+        res=[]
+        for p in page_iterator:
+            if 'Contents' in p:
+                temp=[f['Key'] for f in p['Contents']]
+                res+=temp
+        return res 
+
+    def copyFile(self, from_filename, to_filename):
+        bucket_name=self.bucket_name
+        src="{}/{}".format(bucket_name,from_filename)
+        dest=to_filename
+        return self.aws_s3.copy_object(Bucket=bucket_name, CopySource=src, Key=dest)
+
+    def deleteFile(self, filename):
+        bucket_name=self.bucket_name
+        return self.aws_s3.delete_object(Bucket=bucket_name, Key=filename)

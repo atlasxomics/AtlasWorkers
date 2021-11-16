@@ -7,7 +7,7 @@ volumes:
 
 services:
   core-worker:
-    container_name: atx-cloud
+    container_name: core-worker
     working_dir: $HOME/atx-workers/workers
     # network_mode : host
     networks:
@@ -29,10 +29,10 @@ services:
       - TZ=America/New_York
       - RABBITMQ_HOST=root:atx!cloud!scalphunter@api.atlasxomics.com
       - REDIS_HOST=:atx!cloud!scalphunter@api.atlasxomics.com
-    command: celery -A core worker -n ${HOSTNAME}_${TS} -Q atxcloud --concurrency=4 --loglevel=INFO --max-tasks-per-child=1
+    command: celery -A core worker -n core_${HOSTNAME}_${TS} -Q atxcloud_core --concurrency=4 --loglevel=INFO
 
-  gene-matrix-worker:
-    container_name: atx-cloud
+  gene-worker:
+    container_name: gene-worker
     working_dir: $HOME/atx-workers/workers
     # network_mode : host
     networks:
@@ -54,10 +54,7 @@ services:
       - TZ=America/New_York
       - RABBITMQ_HOST=root:atx!cloud!scalphunter@api.atlasxomics.com
       - REDIS_HOST=:atx!cloud!scalphunter@api.atlasxomics.com
-    command: celery -A gene_matrix worker -n ${HOSTNAME}_${TS} -Q atxcloud --concurrency=4 --loglevel=INFO --max-tasks-per-child=1
-networks:
-  atx-cloud:
-    external: true
+    command: celery -A gene worker -n gene_${HOSTNAME}_${TS} -Q atxcloud_gene --concurrency=4 --loglevel=INFO
 
 networks:
   atx-cloud:
