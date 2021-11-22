@@ -28,9 +28,9 @@ class AWS_S3:
         ## make directory
         self.tempDirectory.mkdir(parents=True,exist_ok=True)       
 
-    def getFileObject(self,filename):
+    def getFileObject(self,filename, overwrite=False):
         temp_outpath=self.tempDirectory.joinpath(filename)
-        if temp_outpath.exists(): return str(temp_outpath)
+        if temp_outpath.exists() and not overwrite: return str(temp_outpath)
         temp_outpath.parent.mkdir(parents=True, exist_ok=True)
         f=open(temp_outpath,'wb+')
         self.aws_s3.download_fileobj(self.bucket_name,filename,f)

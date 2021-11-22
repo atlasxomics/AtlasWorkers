@@ -60,3 +60,5 @@ def compute_qc(self, *args, **kwargs):
     out['genes_summation']=out['genes_summation'].tolist()
     self.update_state(state="PROGRESS", meta={"position": "Finishing" , "progress" : 100})
     return out
+
+

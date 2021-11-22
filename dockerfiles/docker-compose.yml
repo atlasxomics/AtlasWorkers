@@ -52,5 +52,27 @@ services:
       - REDIS_HOST=:atx!cloud!scalphunter@api.atlasxomics.com
     command: celery -A gene worker -n gene_${HOSTNAME}_${TS} -Q atxcloud_gene --concurrency=4 --loglevel=INFO
 
+  atlasbrowser-worker:
+    container_name: atlasbrowser-worker
+    working_dir: $HOME/atx-workers/workers
+    # network_mode : host
+    image: atx-cloud
+    build: . 
+    user: 0:0
+    ipc: host
+    restart: always
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - /etc/group:/etc/group:ro
+      - /etc/passwd:/etc/passwd:ro
+      - /etc/shadow:/etc/shadow:ro
+      - /etc/sudoers:/stc/sudoers:ro
+      - /etc/sudoers.d:/etc/sudoers.d:ro 
+      - $HOME:$HOME
+    environment:
+      - TZ=America/New_York
+      - RABBITMQ_HOST=root:atx!cloud!scalphunter@api.atlasxomics.com
+      - REDIS_HOST=:atx!cloud!scalphunter@api.atlasxomics.com
+    command: celery -A atlasbrowser worker -n atlasbrowser_${HOSTNAME}_${TS} -Q atxcloud_atlasbrowser --concurrency=4 --loglevel=INFO
 
 
