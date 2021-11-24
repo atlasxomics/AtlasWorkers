@@ -59,3 +59,11 @@ class AWS_S3:
     def deleteFile(self, filename):
         bucket_name=self.bucket_name
         return self.aws_s3.delete_object(Bucket=bucket_name, Key=filename)
+
+    def uploadFile(self,filename,output_key,meta=None):
+        temp_outpath=self.tempDirectory.joinpath(filename)
+        ### move the file to s3
+        self.aws_s3.upload_file(str(filename),self.bucket_name,output_key)
+        return output_key
+
+

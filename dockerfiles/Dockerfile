@@ -8,5 +8,6 @@ RUN apt-get update -y &&\
     pip3 install pyyaml warrant numpy==1.20 scanpy leidenalg
 RUN pip3 install opencv-python
 RUN apt-get install libgl1-mesa-glx -y
+RUN pip3 install scipy
 
 
