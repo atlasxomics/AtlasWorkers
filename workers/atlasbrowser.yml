@@ -1,0 +1,11 @@
+tasks:
+  atlasbrowser.generate_spatials:
+    description: Long task test with failed at 80%
+    target: AtlasBrowser
+    args:
+      -   name: metadata
+          value: null
+          type: object
+          caption: Metadata
+          description: AtlasBrowser exclusive task
+    kwargs: null

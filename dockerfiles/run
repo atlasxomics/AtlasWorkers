@@ -1,0 +1,6 @@
+#!/bin/bash
+export TS=$(date "+%s")
+export WORKERNAME=$1
+export POSTFIX=${HOSTNAME}_${TS}
+
+docker-compose run $WORKERNAME

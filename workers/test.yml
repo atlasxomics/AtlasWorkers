@@ -1,0 +1,41 @@
+tasks:
+  test.long_task_fail:
+    description: Long task test with failed at 80%
+    target: null
+    args:
+      -   name: limit
+          value: 10
+          type: number
+          caption: Limit
+          description: Test variable
+    kwargs: null
+  test.long_task_success:
+    description: Long task test
+    target: null
+    args:
+      -   name: limit
+          value: 10
+          type: number
+          caption: Limit
+          description: Test variable
+    kwargs: null
+  test.simple_task:
+    description: Simply concatenate strings
+    target: null
+    args:
+      -   name: str1
+          value: Hello
+          type: string
+          caption: Str1
+          descriotion: NA
+      -   name: str2
+          value: World
+          type: string
+          caption: Str1
+          descriotion: NA
+      -   name: str3
+          value: Milady
+          type: string
+          caption: Str1
+          descriotion: NA
+    kwargs: null

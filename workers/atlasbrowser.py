@@ -18,6 +18,12 @@ def on_worker_init(**_):
     print("AtlasBrowser Worker initiated")
 
 @app.task(bind=True)
+def task_list(self, *args, **kwargs):
+    metafilename = Path(__file__).stem+".yml"
+    taskobject = yaml.safe_load(open(metafilename,'r'))
+    return taskobject
+
+@app.task(bind=True)
 def generate_spatial(self, qcparams, **kwargs):
     self.update_state(state="STARTED")
     self.update_state(state="PROGRESS", meta={"position": "preparation" , "progress" : 0})
@@ -98,6 +104,7 @@ def generate_spatial(self, qcparams, **kwargs):
     cropped_image = source_image[y1:y2,x1:x2]
     sf=scalefactors['tissue_hires_scalef']
     dim = [int(x*sf) for x in source_image.shape[0:2]]
+    dim.reverse()
     resized_image = cv2.resize(cropped_image, dim, interpolation=cv2.INTER_AREA)
     local_hires_image_path = local_spatial_dir.joinpath('tissue_hires_image.png')
     cv2.imwrite(local_hires_image_path.__str__(), resized_image, [cv2.IMWRITE_PNG_COMPRESSION, 9])
@@ -105,6 +112,7 @@ def generate_spatial(self, qcparams, **kwargs):
     local_lowres_image_path = local_spatial_dir.joinpath('tissue_lowres_image.png')
     sf=scalefactors['tissue_lowres_scalef']
     dim = [int(x*sf) for x in source_image.shape[0:2]]
+    dim.reverse()
     resized_image = cv2.resize(cropped_image, dim, interpolation=cv2.INTER_AREA)
     cv2.imwrite(local_lowres_image_path.__str__(), resized_image, [cv2.IMWRITE_PNG_COMPRESSION, 9])
     upload_list.append([local_hires_image_path, tissue_hires_image_filename])
