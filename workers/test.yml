@@ -1,7 +1,16 @@
 tasks:
+  test.check_file_exist:
+    target: general
+    args:
+      - name: filename
+        value: test/download/D248/sequences/read1.fq.gz
+        type: string
+        caption: Filename in S3
+    kwargs: null
+
   test.long_task_fail:
     description: Long task test with failed at 80%
-    target: null
+    target: general
     args:
       -   name: limit
           value: 10
@@ -11,7 +20,7 @@ tasks:
     kwargs: null
   test.long_task_success:
     description: Long task test
-    target: null
+    target: general
     args:
       -   name: limit
           value: 10
@@ -21,7 +30,7 @@ tasks:
     kwargs: null
   test.simple_task:
     description: Simply concatenate strings
-    target: null
+    target: general
     args:
       -   name: str1
           value: Hello

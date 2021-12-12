@@ -22,6 +22,14 @@ def task_list(self, *args, **kwargs):
     return taskobject
 
 @app.task(bind=True)
+def check_file_exist(self,filename_in_s3):
+    self.update_state(state="STARTED")
+    config=utils.load_configuration()
+    aws_s3=utils.AWS_S3(config)
+    return str(aws_s3.checkFileExist(filename_in_s3))
+
+
+@app.task(bind=True)
 def simple_task(self, *args, **kwargs):
     return " ".join(args)
 

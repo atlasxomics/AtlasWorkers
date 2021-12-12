@@ -2,7 +2,7 @@ import yaml,json
 import os
 from pathlib import Path
 import sys, traceback
-
+import uuid
 ## aws
 import boto3
 from botocore.exceptions import ClientError
@@ -10,7 +10,8 @@ from botocore.exceptions import ClientError
 def load_configuration():
     return yaml.safe_load(open('config.yml','r'))
 
-
+def get_uuid():
+    return str(uuid.uuid4())
 ### download file
 
 class AWS_S3:
@@ -49,6 +50,13 @@ class AWS_S3:
                 temp=[f['Key'] for f in p['Contents']]
                 res+=temp
         return res 
+
+    def checkFileExist(self, filepath):
+        try:
+            self.aws_s3.head_object(Bucket=self.bucket_name, Key=filepath)
+            return True
+        except ClientError as e:
+            return False
 
     def copyFile(self, from_filename, to_filename):
         bucket_name=self.bucket_name

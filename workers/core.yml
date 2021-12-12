@@ -1,0 +1,142 @@
+tasks:
+  core.download_from_ftp_to_s3:
+    description: Download from FTP and writes out to S3
+    target: general
+    args:
+      -   name: host
+          value: usftp21.novogene.com
+          type: string
+          caption: Host
+          description: FTP host
+      -   name: port
+          value: 21
+          type: number
+          caption: Port
+          description: FTP Port
+      -   name: username
+          value: X202SC21103880-Z01-F002
+          type: string
+          caption: Username
+          description: User Name (account)
+      -   name: password
+          value: jg6c5xj2
+          type: string
+          caption: Password
+          description: Password
+      -   name: filename
+          value: /raw_data/D249_b/D249_b_CKDL210026010-1a-N702-N501_H23MMDSX3_L3_2.fq.gz
+          type: string
+          caption: Filename
+          description: Filename to download
+      -   name: output_key
+          value: test/download_novogene/out.gz
+          type: string
+          caption: Output Filename
+          description: Output Filename in S3
+    kwargs: null
+  # core.download_novogene_batch_to_s3:
+  #   description: Download from Novogene FTP and writes out to S3
+  #   target: general
+  #   args:
+  #     -   name: host
+  #         value: usftp21.novogene.com
+  #         type: string
+  #         caption: Host
+  #         description: FTP host
+  #     -   name: port
+  #         value: 21
+  #         type: number
+  #         caption: Port
+  #         description: FTP Port
+  #     -   name: username
+  #         value: X202SC21103880-Z01-F002
+  #         type: string
+  #         caption: Username
+  #         description: User Name (account)
+  #     -   name: password
+  #         value: jg6c5xj2
+  #         type: string
+  #         caption: Password
+  #         description: Password
+  #     -   name: source_root
+  #         value: raw_data
+  #         type: string
+  #         caption: Source Root Directory
+  #         description: Source Root dir in Novogene FTP
+  #     -   name: output_root
+  #         value: data
+  #         type: string
+  #         caption: Output Root Directory
+  #         description: Output Root dir in S3
+  #   kwargs: null 
+  core.list_novogene_batch:
+    description: List batch in Novogene
+    target: general
+    args:
+      -   name: host
+          value: usftp21.novogene.com
+          type: string
+          caption: Host
+          description: FTP host
+      -   name: port
+          value: 21
+          type: number
+          caption: Port
+          description: FTP Port
+      -   name: username
+          value: X202SC21103880-Z01-F002
+          type: string
+          caption: Username
+          description: User Name (account)
+      -   name: password
+          value: jg6c5xj2
+          type: string
+          caption: Password
+          description: Password
+      -   name: source_root
+          value: raw_data
+          type: string
+          caption: Source Root Directory
+          description: Source Root dir in Novogene FTP
+      -   name: output_root
+          value: data
+          type: string
+          caption: Output Root Directory
+          description: Output Root dir in S3
+    kwargs: null 
+
+  core.download_novogene_batch_to_s3:
+    description: Download from Novogene FTP and writes out to S3
+    target: general
+    args:
+      -   name: host
+          value: usftp21.novogene.com
+          type: string
+          caption: Host
+          description: FTP host
+      -   name: port
+          value: 21
+          type: number
+          caption: Port
+          description: FTP Port
+      -   name: username
+          value: X202SC21103880-Z01-F002
+          type: string
+          caption: Username
+          description: User Name (account)
+      -   name: password
+          value: jg6c5xj2
+          type: string
+          caption: Password
+          description: Password
+      -   name: source_root
+          value: raw_data
+          type: string
+          caption: Source Root Directory
+          description: Source Root dir in Novogene FTP
+      -   name: output_root
+          value: data
+          type: string
+          caption: Output Root Directory
+          description: Output Root dir in S3
+    kwargs: null 

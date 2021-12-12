@@ -8,7 +8,7 @@ volumes:
 services:
   test-worker:
     container_name: test-worker
-    working_dir: $HOME/atx-workers/workers
+    working_dir: /worker_root/workers
     # network_mode : host
     image: atx-cloud
     build: . 
@@ -22,6 +22,7 @@ services:
       - /etc/shadow:/etc/shadow:ro
       - /etc/sudoers:/stc/sudoers:ro
       - /etc/sudoers.d:/etc/sudoers.d:ro 
+      - $PWD/../:/worker_root
       - $HOME:$HOME
     environment:
       - TZ=America/New_York
@@ -29,9 +30,9 @@ services:
       - REDIS_HOST=:atx!cloud!scalphunter@api.atlasxomics.com
     command: celery -A test worker -n test@${POSTFIX}  -Q atxcloud_test --concurrency=4 --loglevel=INFO
 
-  gene-worker:
-    container_name: gene-worker
-    working_dir: $HOME/atx-workers/workers
+  core-worker:
+    container_name: core-worker
+    working_dir: /worker_root/workers
     # network_mode : host
     image: atx-cloud
     build: . 
@@ -45,6 +46,31 @@ services:
       - /etc/shadow:/etc/shadow:ro
       - /etc/sudoers:/stc/sudoers:ro
       - /etc/sudoers.d:/etc/sudoers.d:ro 
+      - $PWD/../:/worker_root
+      - $HOME:$HOME
+    environment:
+      - TZ=America/New_York
+      - RABBITMQ_HOST=root:atx!cloud!scalphunter@api.atlasxomics.com
+      - REDIS_HOST=:atx!cloud!scalphunter@api.atlasxomics.com
+    command: celery -A core worker -n core@${POSTFIX}  -Q atxcloud_core --concurrency=4 --loglevel=INFO
+
+  gene-worker:
+    container_name: gene-worker
+    working_dir: /worker_root/workers
+    # network_mode : host
+    image: atx-cloud
+    build: . 
+    user: 0:0
+    ipc: host
+    restart: always
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - /etc/group:/etc/group:ro
+      - /etc/passwd:/etc/passwd:ro
+      - /etc/shadow:/etc/shadow:ro
+      - /etc/sudoers:/stc/sudoers:ro
+      - /etc/sudoers.d:/etc/sudoers.d:ro 
+      - $PWD/../:/worker_root
       - $HOME:$HOME
     environment:
       - TZ=America/New_York
@@ -54,7 +80,7 @@ services:
 
   atlasbrowser-worker:
     container_name: atlasbrowser-worker
-    working_dir: $HOME/atx-workers/workers
+    working_dir: /worker_root/workers
     # network_mode : host
     image: atx-cloud
     build: . 
@@ -68,6 +94,7 @@ services:
       - /etc/shadow:/etc/shadow:ro
       - /etc/sudoers:/stc/sudoers:ro
       - /etc/sudoers.d:/etc/sudoers.d:ro 
+      - $PWD/..:/worker_root
       - $HOME:$HOME
     environment:
       - TZ=America/New_York
