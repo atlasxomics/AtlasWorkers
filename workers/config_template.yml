@@ -8,3 +8,7 @@ AWS_DEFAULT_REGION: null
 
 ## S3
 S3_BUCKET_NAME: atx-cloud-dev
+
+## Illumina BaseSpace
+BASESPACE_BASE_URL: https://api.basespace.illumina.com/v2
+BASESPACE_ACCESS_TOKEN: null

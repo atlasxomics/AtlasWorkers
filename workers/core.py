@@ -8,6 +8,8 @@ from celery import Celery
 from celery.signals import worker_init, worker_process_init
 import threading
 import utils
+import hashlib
+import requests
 
 app=Celery('core_task',broker='amqp://'+os.environ['RABBITMQ_HOST'],backend='redis://'+os.environ['REDIS_HOST'])
 
@@ -20,6 +22,33 @@ def task_list(self, *args, **kwargs):
     metafilename = Path(__file__).stem+".yml"
     taskobject = yaml.safe_load(open(metafilename,'r'))
     return taskobject
+
+@app.task(bind=True)
+def list_basespace_datasets(self): ## paging needs to be implemented (default is limit 10)
+    self.update_state(state="STARTED")
+    config=utils.load_configuration()
+    # aws_s3=utils.AWS_S3(config)
+    # tempDir = Path(config['TEMP_DIRECTORY'])
+    base_url = config['BASESPACE_BASE_URL']
+    access_token = config['BASESPACE_ACCESS_TOKEN']
+    uri = base_url + "/datasets"
+    headers={ 'x-access-token': access_token }
+    res = requests.get(uri,headers=headers)
+    if res.status_code == 200:
+        return json.loads(res.content)
+    else:
+        raise Exception("Call to basespace failed")
+
+@app.task(bind=True)
+def call_basespace_href(self,href): ## paging required.
+    config=utils.load_configuration()
+    access_token = config['BASESPACE_ACCESS_TOKEN']
+    headers={ 'x-access-token': access_token }
+    res = requests.get(href,headers=headers)
+    if res.status_code == 200:
+        return json.loads(res.content)
+    else:
+        raise Exception("Call to basespace failed")
 
 @app.task(bind=True)
 def list_novogene_batch(self, host, port, username, password , source_root='raw_data', output_root="data", **kwargs):

@@ -1,4 +1,18 @@
 tasks:
+  core.list_basespace_datasets:
+    description: List datasets from BaseSpace (Illumina)
+    target: general
+    args: []
+    kwargs: null
+  core.call_basespace_href:
+    description: Call Href of BaseSpace
+    target: general
+    args:
+      - name: href
+        value: null
+        type: string
+        caption: URI
+        description: URI Href
   core.download_from_ftp_to_s3:
     description: Download from FTP and writes out to S3
     target: general
