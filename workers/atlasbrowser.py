@@ -50,12 +50,12 @@ def generate_spatial(self, qcparams, **kwargs):
     rotation = int(orientation['rotation'])
     
     ### source image path
-    allFiles = [i for i in oldFiles if '.json' not in i]
+    allFiles = [i for i in oldFiles if '.json' not in i and 'spatial' not in i]
     
     ### output directories (S3)
-    spatial_dir = Path(root_dir).joinpath(run_id,'images','spatial')
-    figure_dir = Path(root_dir).joinpath(run_id,'images','spatial', 'figure')
-    raw_dir = Path(root_dir).joinpath(run_id,'out','Gene','raw')
+    spatial_dir = Path(root_dir).joinpath(run_id, 'images', 'spatial')
+    figure_dir = Path(root_dir).joinpath(run_id, 'images', 'spatial', 'figure')
+    raw_dir = Path(root_dir).joinpath(run_id,'images','spatial')
     metadata_filename = spatial_dir.joinpath('metadata.json')
     scalefactors_filename = spatial_dir.joinpath('scalefactors_json.json')
     tissue_hires_image_filename = spatial_dir.joinpath('tissue_hires_image.png')
