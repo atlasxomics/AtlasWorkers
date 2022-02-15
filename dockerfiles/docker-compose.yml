@@ -26,8 +26,8 @@ services:
       - $HOME:$HOME
     environment:
       - TZ=America/New_York
-      - RABBITMQ_HOST=root:atx!cloud!scalphunter@api.atlasxomics.com
-      - REDIS_HOST=:atx!cloud!scalphunter@api.atlasxomics.com
+      - RABBITMQ_HOST=root:atx!cloud!scalphunter@api2.atlasxomics.com
+      - REDIS_HOST=:atx!cloud!scalphunter@api2.atlasxomics.com
     command: celery -A test worker -n test@${POSTFIX}  -Q atxcloud_test --concurrency=4 --loglevel=INFO
 
   core-worker:
@@ -82,7 +82,7 @@ services:
     container_name: atlasbrowser-worker
     working_dir: /worker_root/workers
     # network_mode : host
-    image: atx-cloud
+    image: atx-cloud-test
     build: . 
     user: 0:0
     ipc: host
