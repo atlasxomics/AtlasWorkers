@@ -98,8 +98,8 @@ services:
       - $HOME:$HOME
     environment:
       - TZ=America/New_York
-      - RABBITMQ_HOST=root:atx!cloud!scalphunter@api.atlasxomics.com
-      - REDIS_HOST=:atx!cloud!scalphunter@api.atlasxomics.com
+      - RABBITMQ_HOST=root:atx!cloud!scalphunter@api2.atlasxomics.com
+      - REDIS_HOST=:atx!cloud!scalphunter@api2.atlasxomics.com
     command: celery -A atlasbrowser worker -n atlasbrowser@${POSTFIX}  -Q atxcloud_atlasbrowser --concurrency=4 --loglevel=INFO
 
 
