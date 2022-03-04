@@ -13,16 +13,7 @@ tasks:
           type: list
           caption: Gene List
           description: List of gene expressions
-      -   name: use_cached
-          value: true
-          caption: Use cached
-          description: Use cached file if exists
-      -   name: no_compute
-          value: false
-          caption: No compute
-          description: Use original file without QC
     kwargs: null
-
   gene.compute_qc_dev:
     description: AtlasGX Gene computation
     target: AtlasGX
@@ -37,37 +28,5 @@ tasks:
           type: list
           caption: Gene List
           description: List of gene expressions
-      -   name: use_cached
-          value: true
-          caption: Use cached
-          description: Use cached file if exists
-      -   name: no_compute
-          value: false
-          caption: No compute
-          description: Use original file without QC
-    kwargs: null
-
-  gene.compute_qc_liya:
-    description: AtlasGX Gene computation
-    target: AtlasGX
-    args:
-      -   name: filename
-          value: null
-          type: string
-          caption: Filename
-          description: Filename of gene matrix (.h5ad file)
-      -   name: genes
-          value: null
-          type: list
-          caption: Gene List
-          description: List of gene expressions
-      -   name: use_cached
-          value: true
-          caption: Use cached
-          description: Use cached file if exists
-      -   name: no_compute
-          value: false
-          caption: No compute
-          description: Use original file without QC
     kwargs: null
 

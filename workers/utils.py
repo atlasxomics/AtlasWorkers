@@ -3,7 +3,6 @@ import os
 from pathlib import Path
 import sys, traceback
 import uuid
-import re
 ## aws
 import boto3
 from botocore.exceptions import ClientError
@@ -13,16 +12,6 @@ def load_configuration():
 
 def get_uuid():
     return str(uuid.uuid4())
-
-def ToNumber(ch):
-    regex = r"[0-9]+"
-    test_str = ch
-    if test_str.isnumeric(): return int(test_str) + 1
-    matches = re.findall(regex, test_str, re.MULTILINE)
-    if len(matches) > 0 :
-        return int(matches[0])
-    else:
-        return None
 ### download file
 
 class AWS_S3:
