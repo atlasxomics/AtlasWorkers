@@ -42,9 +42,9 @@ def compute_qc(self, *args, **kwargs):
     out['genes_summation']=np.zeros(len(out['coordinates']))
     for g_exp in requested_genes:
         try:
-            out['genes'][g_exp]= list(map(lambda x: x[0],adata[:,g_exp].X.todense().tolist()))
+            out['genes'][g_exp]= list(map(lambda x: x[0],np.exp(adata[:,g_exp].X.todense()).tolist()))
         except:
-            out['genes'][g_exp]= list(map(lambda x: x[0],adata[:,g_exp].X.tolist()))
+            out['genes'][g_exp]= list(map(lambda x: x[0],np.exp(adata[:,g_exp].X).tolist()))
     for k,v in out['genes'].items():
         out['genes_summation']+=np.array(v)
     out['genes_summation']=out['genes_summation'].tolist()
@@ -88,9 +88,9 @@ def compute_qc_dev(self, *args, **kwargs):
     out['genes_summation']=np.zeros(len(out['coordinates']))
     for g_exp in requested_genes:
         try:
-            out['genes'][g_exp]= list(map(lambda x: x[0],adata[:,g_exp].X.todense().tolist()))
+            out['genes'][g_exp]= list(map(lambda x: x[0],np.exp(adata[:,g_exp].X.todense()).tolist()))
         except:
-            out['genes'][g_exp]= list(map(lambda x: x[0],adata[:,g_exp].X.tolist()))
+            out['genes'][g_exp]= list(map(lambda x: x[0],np.exp(adata[:,g_exp].X).tolist()))
     for k,v in out['genes'].items():
         out['genes_summation']+=np.array(v)
     out['genes_summation']=out['genes_summation'].tolist()
