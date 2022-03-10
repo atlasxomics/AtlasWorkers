@@ -8,7 +8,8 @@ from celery import Celery
 from celery.signals import worker_init, worker_process_init
 
 import scanpy as sc
-import numpy as np 
+import numpy as np
+import pandas as pd 
 
 import utils
 
@@ -30,11 +31,17 @@ def compute_qc(self, *args, **kwargs):
     aws_s3=utils.AWS_S3(config)
 
     self.update_state(state="STARTED")
-    filename,requested_genes = args
+    filename,requested_genes,all_genes = args
     self.update_state(state="PROGRESS", meta={"position": "preparation" , "progress" : 0})
     downloaded_filename = aws_s3.getFileObject(filename)
     adata=sc.read(downloaded_filename)
+    jdata = adata.copy()
+    jdata.obs['clusters'] = adata.obs['clusters'].astype('category').values
+    sc.tl.rank_genes_groups(jdata, 'clusters', n_genes= 10, use_raw=False)
+    holder = pd.DataFrame(jdata.uns['rank_genes_groups']['names']).head(10)
     out={}
+    out['cluster_names'] = list(holder.columns)
+    out['top_ten'] = holder.values.tolist()
     out['clusters']=adata.obs['clusters'].tolist()
     out['coordinates']=adata.obsm['spatial'].tolist()
     out['coordinates_umap']=adata.obsm['X_umap'].tolist()
