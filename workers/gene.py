@@ -31,7 +31,7 @@ def compute_qc(self, *args, **kwargs):
     aws_s3=utils.AWS_S3(config)
 
     self.update_state(state="STARTED")
-    filename,requested_genes, reserved_1, reserved_2 = args
+    filename,requested_genes = args
     self.update_state(state="PROGRESS", meta={"position": "preparation" , "progress" : 0})
     downloaded_filename = aws_s3.getFileObject(filename)
     adata=sc.read(downloaded_filename)
@@ -42,13 +42,6 @@ def compute_qc(self, *args, **kwargs):
     out['cluster_names'] = list(holder.columns)
     out['top_ten'] = holder.values.tolist()
     out['clusters']=adata.obs['clusters'].tolist()
-    def getClusterIndex(v) :
-        if v.isnumeric():
-            return int(v)+1
-        elif v[0]=='C':
-            return int(v[1:])
-
-    out['clusters_number']=list(map(getClusterIndex, out['clusters']))
     out['coordinates']=adata.obsm['spatial'].tolist()
     out['coordinates_umap']=adata.obsm['X_umap'].tolist()
     out['genes']={}
