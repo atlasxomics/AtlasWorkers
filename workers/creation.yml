@@ -1,0 +1,11 @@
+tasks:
+  create.create_files:
+    description: Long task test with failed at 80%
+    target: null
+    args:
+      -   name: metadata
+          value: null
+          type: object
+          caption: Metadata
+          description: Task that can be used by all of Web
+    kwargs: null
