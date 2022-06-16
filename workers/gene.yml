@@ -29,4 +29,19 @@ tasks:
           caption: Gene List
           description: List of gene expressions
     kwargs: null
+    gene.seq_logo:
+      description: AtlasGX Gene computation
+      target: AtlasGX
+      args:
+        -   name: filename
+            value: null
+            type: string
+            caption: Filename
+            description: Filename of gene matrix (.h5ad file)
+        -   name: genes
+            value: null
+            type: list
+            caption: Gene List
+            description: List of gene expressions
+      kwargs: null
 

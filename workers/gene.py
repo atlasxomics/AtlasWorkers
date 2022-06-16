@@ -112,3 +112,33 @@ def compute_qc_dev(self, *args, **kwargs):
     self.update_state(state="PROGRESS", meta={"position": "Finishing" , "progress" : 100})
     return out
 
+@app.task(bind=True)
+def seq_logo(self, qcparams, **kwargs):
+  config=utils.load_configuration()
+  aws_s3=utils.AWS_S3(config)
+    
+  filename = qcparams['path']
+  id = qcparams['motif']
+  motif_csv = aws_s3.getFileObject(filename)
+  position = id.index('-')
+  motif_id = id[:position] + '_' + id[position+1:]
+  print(motif_id)
+  
+  motif_pwm = pd.read_csv(motif_csv)
+  
+  if motif_id not in motif_pwm['motif'].tolist():
+      raise Exception("Motif not found")
+      
+  motif_pwm = motif_pwm[motif_pwm['motif'] == motif_id]
+  motif_pwm = motif_pwm.dropna(axis = 1)
+  
+  bases = ['A', 'C', 'G', 'T']
+  motif_pwm.insert(0, 'base', bases)
+  
+  positions = motif_pwm.columns.to_list()
+  positions = [i for i in positions if i not in ['base', 'motif']]
+  seqlogo_scores = [list(zip(motif_pwm['base'], motif_pwm[i])) for i in positions]
+  
+      
+  return seqlogo_scores
+      
