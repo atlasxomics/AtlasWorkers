@@ -113,12 +113,11 @@ def compute_qc_dev(self, *args, **kwargs):
     return out
 
 @app.task(bind=True)
-def seq_logo(self, qcparams, **kwargs):
+def seq_logo(self, *args, **kwargs):
   config=utils.load_configuration()
   aws_s3=utils.AWS_S3(config)
     
-  filename = qcparams['path']
-  id = qcparams['motif']
+  filename, id = args
   motif_csv = aws_s3.getFileObject(filename)
   position = id.index('-')
   motif_id = id[:position] + '_' + id[position+1:]
