@@ -185,6 +185,8 @@ def generate_spatial(self, qcparams, **kwargs):
     for local_filename, output_key in upload_list:
         #print("Copying {} to {}".format(local_filename, output_key))
         aws_s3.uploadFile(str(local_filename), str(output_key))
+        if os.path.exists(str(local_filename)):
+          os.remove(str(local_filename))
     #shutil.make_archive('spatialcomp', 'zip', local_spatial_dir)
     self.update_state(state="PROGRESS", meta={"position": "Finished" , "progress" : 100})
     out=[list(map(str, x)) for x in upload_list]
@@ -307,6 +309,8 @@ def generate_h5ad(self, qcparams, **kwargs):
     adata.write(local_h5ad_filename)
     for local_filename, output_key in upload_list:
         aws_s3.uploadFile(str(local_filename), str(output_key))
+        if os.path.exists(str(local_filename)):
+            os.remove(str(local_filename))
     self.update_state(state="PROGRESS", meta={"position": "Finished" , "progress" : 100})
     out=[list(map(str, x)) for x in upload_list]
     return out

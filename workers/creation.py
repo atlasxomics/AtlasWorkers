@@ -48,13 +48,13 @@ def create_files(self, qcparams, **kwargs):
     local_path_dir.mkdir(parents=True, exist_ok=True)
     local_data_filename = local_path_dir.joinpath(file_name)
     if file_type == 'json':
-          json.dump(data, open(local_data_filename,'w'), indent=4,sort_keys=True)
-          upload_list.append([local_data_filename,data_filename])
-          self.update_state(state="PROGRESS", meta={"position": "running" , "progress" : 40})
-          for local_filename, output_key in upload_list:
-            aws_s3.uploadFile(str(local_filename), str(output_key))
-            self.update_state(state="PROGRESS", meta={"position": "Finished" , "progress" : 100})
-            out=[list(map(str, x)) for x in upload_list]
-            return out
+      json.dump(data, open(local_data_filename,'w'), indent=4,sort_keys=True)
+      upload_list.append([local_data_filename,data_filename])
+      self.update_state(state="PROGRESS", meta={"position": "running" , "progress" : 40})
+      for local_filename, output_key in upload_list:
+        aws_s3.uploadFile(str(local_filename), str(output_key))
+        self.update_state(state="PROGRESS", meta={"position": "Finished" , "progress" : 100})
+        out=[list(map(str, x)) for x in upload_list]
+        return out
     
 
