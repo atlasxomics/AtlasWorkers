@@ -13,7 +13,7 @@ import pandas as pd
 
 import utils
 
-app=Celery('core_task',broker='amqp://'+os.environ['RABBITMQ_HOST'],backend='redis://'+os.environ['REDIS_HOST'])
+app=Celery('gene_task',broker='amqp://'+os.environ['RABBITMQ_HOST'],backend='redis://'+os.environ['REDIS_HOST'])
 
 @worker_process_init.connect()
 def on_worker_init(**_):
@@ -57,9 +57,9 @@ def compute_qc(self, *args, **kwargs):
     out['genes_summation']=np.zeros(len(out['coordinates']))
     for g_exp in requested_genes:
         try:
-            out['genes'][g_exp]= list(map(lambda x: x[0],np.exp(adata[:,g_exp].X.todense()).tolist()))
+            out['genes'][g_exp]= list(map(lambda x: x[0],adata[:,g_exp].X.todense()))
         except:
-            out['genes'][g_exp]= list(map(lambda x: x[0],np.exp(adata[:,g_exp].X).tolist()))
+            out['genes'][g_exp]= list(map(lambda x: x[0],adata[:,g_exp].X))
     for k,v in out['genes'].items():
         out['genes_summation']+=np.array(v)
     out['genes_summation']=out['genes_summation'].tolist()
@@ -121,7 +121,6 @@ def seq_logo(self, *args, **kwargs):
   motif_csv = aws_s3.getFileObject(filename)
   position = id.index('-')
   motif_id = id[:position] + '_' + id[position+1:]
-  print(motif_id)
   
   motif_pwm = pd.read_csv(motif_csv)
   
