@@ -105,23 +105,8 @@ def generate_spatial(self, qcparams, **kwargs):
             temp = re.compile("(.+\/)(.+)")
             res = temp.search(i).groups() 
             fileName = res[1]
-            ### image flipping
-            # if hflip:
-            #     horiz = source_image.transpose(PIL.Image.FLIP_TOP_BOTTOM)
-            #     source_image = horiz
-            # if vflip:
-            #     vert = source_image.transpose(PIL.Image.FLIP_LEFT_RIGHT)
-            #     source_image = vert
             if rotation != 0 :
-                # if rotation == 90:
-                #     rotation = 270
-                #     rotate = source_image.rotate(rotation, expand=True)
-                #     source_image = rotate
-                # if rotation == 270:
-                #     rotation = 90
-                #     rotate = source_image.rotate(rotation, expand=True)
-                #     source_image = rotate
-                rotate = source_image.rotate(rotation, expand=True)
+                rotate = source_image.rotate(rotation, expand = False)
                 source_image = rotate
             pillow_source_image = source_image
             ### generate cropped images using crop parameters
@@ -178,7 +163,6 @@ def generate_spatial(self, qcparams, **kwargs):
     f.close()
     self.update_state(state="PROGRESS", meta={"position": "Finishing" , "progress" : 80})
     upload_list.append([local_tissue_positions_filename, tissue_positions_filename])
-
     ### concatenate tissue_positions_to gene expressions
     
     tissue_position_list_umi_genes_list = []
