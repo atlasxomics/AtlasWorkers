@@ -77,12 +77,13 @@ def generate_spatial(self, qcparams, **kwargs):
     local_figure_dir.mkdir(parents=True, exist_ok=True)
     ### read barcodes information 
     row_count = 50
-    local_barcodes_filename = 'data/atlasbrowser/barcodes_50.txt'
+    local_barcodes_filename = 'data/atlasbrowser/bc50v1.txt'
     if barcodes == 2:
         local_barcodes_filename = 'data/atlasbrowser/barcodesv2_50.txt'
-    if len(tixel_positions) == 10000:
-        local_barcodes_filename = 'data/atlasbrowser/barcodes_100.txt'
-        row_count = 100
+    elif barcodes == 3:
+        local_barcodes_filename = 'data/atlasbrowser/barcodesv3_50.txt'
+    elif barcodes == 4:
+        local_barcodes_filename = 'data/atlasbrowser/barcodesv4_50.txt'
 
     self.update_state(state="PROGRESS", meta={"position": "running" , "progress" : 20})
     barcodes = None
@@ -169,8 +170,8 @@ def generate_spatial(self, qcparams, **kwargs):
     for local_filename, output_key in upload_list:
         #print("Copying {} to {}".format(local_filename, output_key))
         aws_s3.uploadFile(str(local_filename), str(output_key))
-        if os.path.exists(str(local_filename)):
-          os.remove(str(local_filename))
+        # if os.path.exists(str(local_filename)):
+        #   os.remove(str(local_filename))
     #shutil.make_archive('spatialcomp', 'zip', local_spatial_dir)
     self.update_state(state="PROGRESS", meta={"position": "Finished" , "progress" : 100})
     out=[list(map(str, x)) for x in upload_list]
