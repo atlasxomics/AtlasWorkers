@@ -79,11 +79,11 @@ def generate_spatial(self, qcparams, **kwargs):
     row_count = 50
     local_barcodes_filename = 'data/atlasbrowser/bc50v1.txt'
     if barcodes == 2:
-        local_barcodes_filename = 'data/atlasbrowser/barcodesv2_50.txt'
+        local_barcodes_filename = 'data/atlasbrowser/bc50v2.txt'
     elif barcodes == 3:
-        local_barcodes_filename = 'data/atlasbrowser/barcodesv3_50.txt'
+        local_barcodes_filename = 'data/atlasbrowser/bc50v3.txt'
     elif barcodes == 4:
-        local_barcodes_filename = 'data/atlasbrowser/barcodesv4_50.txt'
+        local_barcodes_filename = 'data/atlasbrowser/bc50v4.txt'
 
     self.update_state(state="PROGRESS", meta={"position": "running" , "progress" : 20})
     barcodes = None
