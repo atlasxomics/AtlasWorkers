@@ -54,8 +54,8 @@ def generate_spatial(self, qcparams, **kwargs):
     crop_coordinates = qcparams['crop_area']
     orientation = qcparams['orientation']
     barcodes = qcparams['barcodes']
-    hflip = orientation['horizontal_flip']
-    vflip = orientation['vertical_flip']
+    # hflip = orientation['horizontal_flip']
+    # vflip = orientation['vertical_flip']
     rotation = int(orientation['rotation'])
     
     ### source image path
@@ -105,22 +105,9 @@ def generate_spatial(self, qcparams, **kwargs):
             temp = re.compile("(.+\/)(.+)")
             res = temp.search(i).groups() 
             fileName = res[1]
-            ### image flipping
-            if hflip:
-                horiz = source_image.transpose(PIL.Image.FLIP_TOP_BOTTOM)
-                source_image = horiz
-            if vflip:
-                vert = source_image.transpose(PIL.Image.FLIP_LEFT_RIGHT)
-                source_image = vert
             if rotation != 0 :
-                if rotation == 90:
-                    rotation = 270
-                    rotate = source_image.rotate(rotation, expand=True)
-                    source_image = rotate
-                if rotation == 270:
-                    rotation = 90
-                    rotate = source_image.rotate(rotation, expand=True)
-                    source_image = rotate
+                rotate = source_image.rotate(rotation, expand = False)
+                source_image = rotate
             pillow_source_image = source_image
             ### generate cropped images using crop parameters
             cropped_image = pillow_source_image.crop((crop_coordinates[0], crop_coordinates[1], crop_coordinates[2], crop_coordinates[3]))
@@ -154,8 +141,6 @@ def generate_spatial(self, qcparams, **kwargs):
                 json.dump(scalefactors, open(local_scalefactors_filename,'w'), indent=4,sort_keys=True)
                 upload_list.append([local_hires_image_path, tissue_hires_image_filename])
                 upload_list.append([local_lowres_image_path, tissue_lowres_image_filename])
-
-
         
     self.update_state(state="PROGRESS", meta={"position": "running" , "progress" : 75})
     ### generate tissue_positions_list.csv
@@ -178,7 +163,6 @@ def generate_spatial(self, qcparams, **kwargs):
     f.close()
     self.update_state(state="PROGRESS", meta={"position": "Finishing" , "progress" : 80})
     upload_list.append([local_tissue_positions_filename, tissue_positions_filename])
-
     ### concatenate tissue_positions_to gene expressions
     
     tissue_position_list_umi_genes_list = []
