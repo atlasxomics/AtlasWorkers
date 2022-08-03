@@ -1,3 +1,4 @@
+from cProfile import run
 import os
 from threading import local
 import traceback
@@ -44,6 +45,21 @@ def generate_spatial(self, qcparams, **kwargs):
     aws_s3=utils.AWS_S3(config)
     ## config
     temp_dir = config['TEMP_DIRECTORY']
+    print(temp_dir)
+    # for filename in os.listdir(temp_dir):
+    #     print("dog")
+    #     print(filename)
+#     import os, shutil
+# folder = '/path/to/folder'
+# for filename in os.listdir(folder):
+#     file_path = os.path.join(folder, filename)
+#     try:
+#         if os.path.isfile(file_path) or os.path.islink(file_path):
+#             os.unlink(file_path)
+#         elif os.path.isdir(file_path):
+#             shutil.rmtree(file_path)
+#     except Exception as e:
+#         print('Failed to delete %s. Reason: %s' % (file_path, e))
     upload_list=[]
     ## parameter parsing
     root_dir = qcparams['root_dir']
@@ -58,7 +74,20 @@ def generate_spatial(self, qcparams, **kwargs):
     # hflip = orientation['horizontal_flip']
     # vflip = orientation['vertical_flip']
     rotation = int(orientation['rotation'])
-    
+
+    #remove all files from the temp folder. To allevaite bugs being caused by figure folder being generated using old images.
+    temp_path = Path(temp_dir).joinpath(root_dir, run_id, 'images')
+    for filename in os.listdir(temp_path):
+        file_path = os.path.join(temp_path, filename)
+        print(file_path)
+        try:
+            if os.path.isfile(file_path):
+                os.unlink(file_path)
+            elif os.path.isdir(file_path):
+                shutil.rmtree(file_path)
+        except Exception as e:
+            print('Failed to delete ' + file_path + " due to " + e)
+
     ### source image path
     allFiles = [i for i in oldFiles if '.json' not in i and 'spatial' not in i]
     
@@ -76,6 +105,9 @@ def generate_spatial(self, qcparams, **kwargs):
     local_spatial_dir.mkdir(parents=True, exist_ok=True)
     local_figure_dir = Path(temp_dir).joinpath(figure_dir)
     local_figure_dir.mkdir(parents=True, exist_ok=True)
+
+    print(root_dir)
+
     ### read barcodes information 
     row_count = 50
     local_barcodes_filename = 'data/atlasbrowser/bc50v1.txt'
@@ -130,31 +162,6 @@ def generate_spatial(self, qcparams, **kwargs):
     upload_list.append([tempName_postB, s3Name_postB])
     upload_list.append([tempName_bsa, s3Name_bsa])
 
-    # for i in allFiles:
-    #     if 'postb' in i.lower():
-    #         local_image_path = aws_s3.getFileObject(str(i))
-    #         print(local_image_path)
-    #         source_image = Image.open(str(local_image_path))
-    #         source_original = Image.open(str(local_image_path))
-    #         # save = source_original.save(str(local_image_path))
-    #         time.sleep(5)
-    #         print("moving on from saving")
-    #         temp = re.compile("(.+\/)(.+)")
-    #         res = temp.search(i).groups() 
-    #         fileName = res[1]
-    #         if rotation != 0 :
-    #             rotate = source_image.rotate(rotation, expand = False)
-    #             source_image = rotate
-    #         pillow_source_image = source_image
-    #         print(crop_coordinates)
-    #         ### generate cropped images using crop parameters
-    #         cropped_image = pillow_source_image.crop((crop_coordinates[0], crop_coordinates[1], crop_coordinates[2], crop_coordinates[3]))
-    #             ## high resolution
-    #         tempName = local_figure_dir.joinpath(fileName)
-    #         s3Name = figure_dir.joinpath(fileName)
-    #         print("saving cropped image")
-    #         cropped_image.save(tempName.__str__())
-    #         upload_list.append([tempName, s3Name])
     height = cropped_postB.height
     width = cropped_postB.width
     self.update_state(state="PROGRESS", meta={"position": "running" , "progress" : 65})
