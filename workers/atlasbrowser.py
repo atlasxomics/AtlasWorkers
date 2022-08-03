@@ -1,4 +1,4 @@
-from cProfile import run
+
 import os
 from threading import local
 import traceback
@@ -45,21 +45,6 @@ def generate_spatial(self, qcparams, **kwargs):
     aws_s3=utils.AWS_S3(config)
     ## config
     temp_dir = config['TEMP_DIRECTORY']
-    print(temp_dir)
-    # for filename in os.listdir(temp_dir):
-    #     print("dog")
-    #     print(filename)
-#     import os, shutil
-# folder = '/path/to/folder'
-# for filename in os.listdir(folder):
-#     file_path = os.path.join(folder, filename)
-#     try:
-#         if os.path.isfile(file_path) or os.path.islink(file_path):
-#             os.unlink(file_path)
-#         elif os.path.isdir(file_path):
-#             shutil.rmtree(file_path)
-#     except Exception as e:
-#         print('Failed to delete %s. Reason: %s' % (file_path, e))
     upload_list=[]
     ## parameter parsing
     root_dir = qcparams['root_dir']
@@ -79,7 +64,6 @@ def generate_spatial(self, qcparams, **kwargs):
     temp_path = Path(temp_dir).joinpath(root_dir, run_id, 'images')
     for filename in os.listdir(temp_path):
         file_path = os.path.join(temp_path, filename)
-        print(file_path)
         try:
             if os.path.isfile(file_path):
                 os.unlink(file_path)
@@ -106,7 +90,6 @@ def generate_spatial(self, qcparams, **kwargs):
     local_figure_dir = Path(temp_dir).joinpath(figure_dir)
     local_figure_dir.mkdir(parents=True, exist_ok=True)
 
-    print(root_dir)
 
     ### read barcodes information 
     row_count = 50
@@ -128,7 +111,6 @@ def generate_spatial(self, qcparams, **kwargs):
     json.dump(metadata, open(local_metadata_filename,'w'), indent=4,sort_keys=True)
     upload_list.append([local_metadata_filename,metadata_filename])
     upload_list.append([local_scalefactors_filename,scalefactors_filename])
-    self.update_state(state="PROGRESS", meta={"position": "running" , "progress" : 40})
     ### load image from s3
     for i in allFiles:
         if 'postb' in i.lower():
@@ -142,6 +124,7 @@ def generate_spatial(self, qcparams, **kwargs):
                 postB_source = postB_original
                 postB_original.save(str(local_image_path))
 
+    self.update_state(state="PROGRESS", meta={"position": "running" , "progress" : 45})
     if rotation != 0 :
         rotate_bsa = bsa_source.rotate(rotation, expand = False)
         bsa_source = rotate_bsa
