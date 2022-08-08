@@ -42,7 +42,8 @@ def generate_spatial(self, qcparams, **kwargs):
     self.update_state(state="STARTED")
     self.update_state(state="PROGRESS", meta={"position": "preparation" , "progress" : 0})
     config=utils.load_configuration()
-    config["S3_BUCKET_NAME"] = qcparams["bucket"]
+    bucket_name = qcparams["bucket"]
+    config["S3_BUCKET_NAME"] = bucket_name
     print(config)
     aws_s3=utils.AWS_S3(config)
     ## config
@@ -77,7 +78,6 @@ def generate_spatial(self, qcparams, **kwargs):
     allFiles = [i for i in oldFiles if '.json' not in i and 'spatial' not in i]
     print("here")
     print(allFiles)
-    
     ### output directories (S3)
     spatial_dir = Path(root_dir).joinpath(run_id,'spatial')
     figure_dir = Path(root_dir).joinpath(run_id,'spatial', 'figure')
@@ -121,10 +121,10 @@ def generate_spatial(self, qcparams, **kwargs):
         vals = i.split("/")
         name = vals[len(vals) - 1]
         if "flow" in i.lower() or "fix" in i.lower():
-            path = str(spatial_dir.joinpath(name))
+            path = str(figure_dir.joinpath(name))
             print("old: " + i)
             print("new: " + path)
-            aws_s3.moveFile("atx-illumina", i, path)
+            aws_s3.moveFile(bucket_name, i, path)
         if 'postb' in i.lower():
             local_image_path = aws_s3.getFileObject(str(i))
             if "bsa" in i.lower():
@@ -135,8 +135,9 @@ def generate_spatial(self, qcparams, **kwargs):
                 postB_original = Image.open(str(local_image_path))
                 postB_source = postB_original
                 postB_original.save(str(local_image_path))
+                self.update_state(state="PROGRESS", meta={"position": "running" , "progress" : 45})
 
-    self.update_state(state="PROGRESS", meta={"position": "running" , "progress" : 45})
+    
     if rotation != 0 :
         rotate_bsa = bsa_source.rotate(rotation, expand = False)
         bsa_source = rotate_bsa

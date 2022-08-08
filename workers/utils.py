@@ -87,22 +87,5 @@ class AWS_S3:
             Bucket=bucket,
             Key=from_path
         )
-        # res1 = self.aws_resource.Object("atx-illumina", to_path).copy_from(CopySource = "Images/D288/D288_flowB.TIF")
-        # res2 = self.aws_resource.Object(bucket, "Images/D288/D288_flowA.TIF").delete()
-        print(res1)
-        # print(res2)
 
-        # res1 = self.aws_s3.copy_object(
-        #     CopySource = "atx-illumina/Images/D288/D288_flowB.TIF",
-        #     Bucket="atx-illumina",
-        #     Key="Images/D288/spatial/D288_flowB.TIF"
-        # )
-        # res2 = self.aws_s3.delete_object(
-        #     Bucket= "atx-illumina",
-        #     Key = "Images/D288/D288_flowB.TIF" 
-        # )
-        # # res1 = self.aws_resource.Object("atx-illumina", to_path).copy_from(CopySource = "Images/D288/D288_flowB.TIF")
-        # # res2 = self.aws_resource.Object(bucket, "Images/D288/D288_flowA.TIF").delete()
-        # print(res1)
-        # print(res2)
 
