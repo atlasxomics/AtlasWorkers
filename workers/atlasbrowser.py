@@ -42,8 +42,10 @@ def generate_spatial(self, qcparams, **kwargs):
     self.update_state(state="STARTED")
     self.update_state(state="PROGRESS", meta={"position": "preparation" , "progress" : 0})
     config=utils.load_configuration()
-    bucket_name = qcparams["bucket"]
-    config["S3_BUCKET_NAME"] = bucket_name
+    bucket_name = config["S3_BUCKET_NAME"]
+    if "bucket" in qcparams.keys():
+        bucket_name = qcparams["bucket"]
+        config["S3_BUCKET_NAME"] = bucket_name
     print(config)
     aws_s3=utils.AWS_S3(config)
     ## config
@@ -76,11 +78,9 @@ def generate_spatial(self, qcparams, **kwargs):
 
     ### source image path
     allFiles = [i for i in oldFiles if '.json' not in i and 'spatial' not in i]
-    print("here")
-    print(allFiles)
     ### output directories (S3)
-    spatial_dir = Path(root_dir).joinpath(run_id,'spatial')
-    figure_dir = Path(root_dir).joinpath(run_id,'spatial', 'figure')
+    spatial_dir = Path(root_dir).joinpath(run_id, 'spatial')
+    figure_dir = Path(root_dir).joinpath(run_id, 'spatial', 'figure')
     raw_dir = Path(root_dir).joinpath(run_id,'out','Gene','raw')
     metadata_filename = spatial_dir.joinpath('metadata.json')
     scalefactors_filename = spatial_dir.joinpath('scalefactors_json.json')
