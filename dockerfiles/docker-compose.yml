@@ -124,6 +124,4 @@ services:
       - TZ=America/New_York
       - RABBITMQ_HOST=root:atx!cloud!scalphunter@api.atlasxomics.com
       - REDIS_HOST=:atx!cloud!scalphunter@api.atlasxomics.com
-    command: celery -A atlasbrowser worker -n atlasbrowser@${POSTFIX}  -Q jonah_browser --concurrency=4 --loglevel=INFO
-
-
+    command: celery -A atlasbrowser worker -n atlasbrowser@${POSTFIX}  -Q atxcloud_atlasbrowser --concurrency=4 --loglevel=INFO
