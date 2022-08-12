@@ -23,6 +23,7 @@ class AWS_S3:
         os.environ['AWS_DEFAULT_REGION']=self.config['AWS_DEFAULT_REGION']
         self.bucket_name=self.config['S3_BUCKET_NAME']
         self.aws_s3=boto3.client('s3')
+        # self.aws_resource = boto3.resource('s3')
         self.initialize()
 
     def initialize(self):
@@ -73,5 +74,18 @@ class AWS_S3:
         ### move the file to s3
         self.aws_s3.upload_file(str(filename),self.bucket_name,output_key)
         return output_key
+
+    def moveFile(self, bucket, from_path, to_path):
+        bucket_src = bucket + "/" + from_path
+        print(bucket_src)
+        res1 = self.aws_s3.copy_object(
+            CopySource = bucket_src,
+            Bucket=bucket,
+            Key=to_path
+        )
+        res2 = self.aws_s3.delete_object(
+            Bucket=bucket,
+            Key=from_path
+        )
 
 

@@ -42,6 +42,11 @@ def generate_spatial(self, qcparams, **kwargs):
     self.update_state(state="STARTED")
     self.update_state(state="PROGRESS", meta={"position": "preparation" , "progress" : 0})
     config=utils.load_configuration()
+    bucket_name = config["S3_BUCKET_NAME"]
+    if "bucket" in qcparams.keys():
+        bucket_name = qcparams["bucket"]
+        config["S3_BUCKET_NAME"] = bucket_name
+    print(config)
     aws_s3=utils.AWS_S3(config)
     ## config
     temp_dir = config['TEMP_DIRECTORY']
@@ -56,12 +61,10 @@ def generate_spatial(self, qcparams, **kwargs):
     crop_coordinates = qcparams['crop_area']
     orientation = qcparams['orientation']
     barcodes = qcparams['barcodes']
-    # hflip = orientation['horizontal_flip']
-    # vflip = orientation['vertical_flip']
     rotation = int(orientation['rotation'])
 
     #remove all files from the temp folder. To allevaite bugs being caused by figure folder being generated using old images.
-    temp_path = Path(temp_dir).joinpath(root_dir, run_id, 'images')
+    temp_path = Path(temp_dir).joinpath(root_dir, run_id)
     if os.path.exists(temp_path):
         for filename in os.listdir(temp_path):
             file_path = os.path.join(temp_path, filename)
@@ -75,10 +78,9 @@ def generate_spatial(self, qcparams, **kwargs):
 
     ### source image path
     allFiles = [i for i in oldFiles if '.json' not in i and 'spatial' not in i]
-    
     ### output directories (S3)
-    spatial_dir = Path(root_dir).joinpath(run_id,'images','spatial')
-    figure_dir = Path(root_dir).joinpath(run_id,'images','spatial', 'figure')
+    spatial_dir = Path(root_dir).joinpath(run_id, 'spatial')
+    figure_dir = Path(root_dir).joinpath(run_id, 'spatial', 'figure')
     raw_dir = Path(root_dir).joinpath(run_id,'out','Gene','raw')
     metadata_filename = spatial_dir.joinpath('metadata.json')
     scalefactors_filename = spatial_dir.joinpath('scalefactors_json.json')
@@ -87,11 +89,12 @@ def generate_spatial(self, qcparams, **kwargs):
     tissue_positions_filename = spatial_dir.joinpath('tissue_positions_list.csv')
     ### local temp directories
     local_spatial_dir = Path(temp_dir).joinpath(spatial_dir)
+    # parents = True specifies that if not already existsing those parent directories are made.
+    # exist_ok indicates to not re-make the folders if they already exist
     local_spatial_dir.mkdir(parents=True, exist_ok=True)
     local_figure_dir = Path(temp_dir).joinpath(figure_dir)
     local_figure_dir.mkdir(parents=True, exist_ok=True)
-
-
+    
     ### read barcodes information 
     row_count = 50
     local_barcodes_filename = 'data/atlasbrowser/bc50v1.txt'
@@ -110,10 +113,18 @@ def generate_spatial(self, qcparams, **kwargs):
     local_metadata_filename = local_spatial_dir.joinpath('metadata.json')
     local_scalefactors_filename = local_spatial_dir.joinpath('scalefactors_json.json')
     json.dump(metadata, open(local_metadata_filename,'w'), indent=4,sort_keys=True)
+    # adding metadata and scalefactors to the list to be uploaded to S3 Bucket
     upload_list.append([local_metadata_filename,metadata_filename])
     upload_list.append([local_scalefactors_filename,scalefactors_filename])
     ### load image from s3
     for i in allFiles:
+        vals = i.split("/")
+        name = vals[len(vals) - 1]
+        if "flow" in i.lower() or "fix" in i.lower():
+            path = str(figure_dir.joinpath(name))
+            print("old: " + i)
+            print("new: " + path)
+            aws_s3.moveFile(bucket_name, i, path)
         if 'postb' in i.lower():
             local_image_path = aws_s3.getFileObject(str(i))
             if "bsa" in i.lower():
@@ -124,8 +135,9 @@ def generate_spatial(self, qcparams, **kwargs):
                 postB_original = Image.open(str(local_image_path))
                 postB_source = postB_original
                 postB_original.save(str(local_image_path))
+                self.update_state(state="PROGRESS", meta={"position": "running" , "progress" : 45})
 
-    self.update_state(state="PROGRESS", meta={"position": "running" , "progress" : 45})
+    
     if rotation != 0 :
         rotate_bsa = bsa_source.rotate(rotation, expand = False)
         bsa_source = rotate_bsa
@@ -143,6 +155,7 @@ def generate_spatial(self, qcparams, **kwargs):
     print("saving cropped image")
     cropped_bsa.save(tempName_bsa.__str__())
     cropped_postB.save(tempName_postB.__str__())
+    # adding figure folder images to upload list
     upload_list.append([tempName_postB, s3Name_postB])
     upload_list.append([tempName_bsa, s3Name_bsa])
 
@@ -227,7 +240,7 @@ def generate_h5ad(self, qcparams, **kwargs):
     matrix = Path(root_dir + '/'+ run_id + '/out/Gene/raw/matrix.mtx')
     pathMatrix = aws_s3.getFileObject(str(matrix))
 
-    spatial_dir = Path(root_dir).joinpath(run_id,'images','spatial')
+    spatial_dir = Path(root_dir).joinpath(run_id,'spatial')
     raw_dir = Path(root_dir).joinpath(run_id,'out','Gene','raw')
     h5_dir = Path(root_dir).joinpath(run_id,'h5','obj')
     barcode_filename = raw_dir.joinpath('barcodes.tsv')
