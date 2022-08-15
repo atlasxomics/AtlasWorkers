@@ -29,6 +29,7 @@ def task_list(self, *args, **kwargs):
 @app.task(bind=True)
 def create_files(self, qcparams, **kwargs):
     config=utils.load_configuration()
+    config["S3_bucket_name"] = qcparams["bucket_name"]
     aws_s3=utils.AWS_S3(config)
     self.update_state(state="STARTED")
     ## config
