@@ -54,6 +54,9 @@ def compute_qc(self, *args, **kwargs):
         out['coordinates_umap'] = []
         out['genes'] = {}
         out['genes_summation'] = []
+        out['total_genes'] = []
+        out['TSS'] = []
+        out['frags'] = []
         self.update_state(state="PROGRESS", meta={"position": "Finishing" , "progress" : 100})
         return out
     else:
@@ -68,6 +71,9 @@ def compute_qc(self, *args, **kwargs):
         out['coordinates_umap']=adata.obsm['X_umap'].tolist()
         out['genes']={}
         out['genes_summation']=np.zeros(len(out['coordinates']))
+        out['total_genes'] = adata.var_names.to_list()
+        out['TSS'] = adata.obs['TSSEnrichment'].tolist()
+        out['frags'] = adata.obs['nFrags'].tolist()
         for g_exp in requested_genes:
             try:
                 out['genes'][g_exp]= list(map(lambda x: x[0],adata[:,g_exp].X.todense()))
