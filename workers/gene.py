@@ -39,7 +39,7 @@ def compute_qc(self, *args, **kwargs):
     holder2 = []
     out={}
     if (len(selected) > 0):
-        length = len(adata.obs['row'].index)
+        length = adata.n_obs
         lasso = ["unselected" for x in range(length)]
         for i in selected:
             lasso[i] = "selected"
