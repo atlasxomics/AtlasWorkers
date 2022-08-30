@@ -47,16 +47,7 @@ def compute_qc(self, *args, **kwargs):
         sc.tl.rank_genes_groups(adata, 'lasso', n_genes= 10, use_raw=False)
         holder2 = pd.DataFrame(adata.uns['rank_genes_groups']['names'])
         out['top_selected'] = holder2['selected'].values.tolist()
-        out['cluster_names'] = []
         out['top_ten'] = []
-        out['clusters'] = []
-        out['coordinates'] = []
-        out['coordinates_umap'] = []
-        out['genes'] = {}
-        out['genes_summation'] = []
-        out['total_genes'] = []
-        out['TSS'] = []
-        out['frags'] = []
         self.update_state(state="PROGRESS", meta={"position": "Finishing" , "progress" : 100})
         return out
     else:
@@ -64,24 +55,7 @@ def compute_qc(self, *args, **kwargs):
         adata.obs['clusters'] = adata.obs['clusters'].astype('category').values
         sc.tl.rank_genes_groups(adata, 'clusters', n_genes= 10, use_raw=False)
         holder = pd.DataFrame(adata.uns['rank_genes_groups']['names'])
-        out['cluster_names'] = list(holder.columns)
         out['top_ten'] = holder.values.tolist()
-        out['clusters']=adata.obs['clusters'].tolist()
-        out['coordinates']=adata.obsm['spatial'].tolist()
-        out['coordinates_umap']=adata.obsm['X_umap'].tolist()
-        out['genes']={}
-        out['genes_summation']=np.zeros(len(out['coordinates']))
-        out['total_genes'] = adata.var_names.to_list()
-        out['TSS'] = adata.obs['TSSEnrichment'].tolist()
-        out['frags'] = adata.obs['nFrags'].tolist()
-        for g_exp in requested_genes:
-            try:
-                out['genes'][g_exp]= list(map(lambda x: x[0],adata[:,g_exp].X.todense()))
-            except:
-                out['genes'][g_exp]= list(map(lambda x: x[0],adata[:,g_exp].X))
-        for k,v in out['genes'].items():
-            out['genes_summation']+=np.array(v)
-        out['genes_summation']=out['genes_summation'].tolist()
         self.update_state(state="PROGRESS", meta={"position": "Finishing" , "progress" : 100})
         return out
 
