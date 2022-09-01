@@ -125,17 +125,19 @@ def generate_spatial(self, qcparams, **kwargs):
             print("old: " + i)
             print("new: " + path)
             aws_s3.moveFile(bucket_name, i, path)
-        if 'postb' in i.lower():
+        if 'postb_bsa' in i.lower():
             local_image_path = aws_s3.getFileObject(str(i))
-            if "bsa" in i.lower():
-                bsa_original = Image.open(str(local_image_path))
-                bsa_source = bsa_original
-                bsa_original.save(str(local_image_path))
-            else:
-                postB_original = Image.open(str(local_image_path))
-                postB_source = postB_original
-                postB_original.save(str(local_image_path))
-                self.update_state(state="PROGRESS", meta={"position": "running" , "progress" : 45})
+            bsa_original = Image.open(str(local_image_path))
+            bsa_source = bsa_original
+            bsa_original.save(str(local_image_path))
+            img_arr = np.array(bsa_original, np.uint8)
+            
+            postB_img_arr = img_arr[:, :, 2]
+            postB_original = Image.fromarray(postB_img_arr)
+            postB_source = postB_original
+            postB_original.save(str(local_image_path))
+
+            self.update_state(state="PROGRESS", meta={"position": "running" , "progress" : 45})
 
     
     if rotation != 0 :
