@@ -61,7 +61,14 @@ def generate_spatial(self, qcparams, **kwargs):
     orientation = qcparams['orientation']
     barcodes = qcparams['barcodes']
     rotation = int(orientation['rotation'])
-    barcode_generation = metadata["barcode_version_generation"]
+    # barcode_generation = metadata["barcode_version_generation"]
+
+    run_id_number = int(run_id[1:])
+    next_gen_barcodes = False
+    if run_id_number >= 895:
+        next_gen_barcodes = True
+    
+    metadata["replaced_24_barcodes"] = next_gen_barcodes
 
     #remove all files from the temp folder. To allevaite bugs being caused by figure folder being generated using old images.
     temp_path = Path(temp_dir).joinpath(root_dir, run_id)
@@ -97,18 +104,19 @@ def generate_spatial(self, qcparams, **kwargs):
     
     ### read barcodes information 
     row_count = 50
-    local_barcodes_filename = 'data/atlasbrowser/bc50v1.txt'
-    if barcode_generation == 'next-gen':
-        local_barcodes_filename = 'data/atlasbrowser/bc50v1-24.txt'
+
+    local_barcodes_filename = 'data/atlasbrowser/bc50v1'
     if barcodes == 2:
-        if barcode_generation == 'next-gen':
-            local_barcodes_filename = 'data/atlasbrowser/bc50v2-24.txt'
-        else:
-            local_barcodes_filename = 'data/atlasbrowser/bc50v2.txt'
+        local_barcodes_filename = 'data/atlasbrowser/bc50v2'
     elif barcodes == 3:
-        local_barcodes_filename = 'data/atlasbrowser/bc50v3.txt'
+        local_barcodes_filename = 'data/atlasbrowser/bc50v3'
     elif barcodes == 4:
-        local_barcodes_filename = 'data/atlasbrowser/bc50v4.txt'
+        local_barcodes_filename = 'data/atlasbrowser/bc50v4'
+    
+    if next_gen_barcodes:
+        local_barcodes_filename += '-24.txt'
+    else:
+        local_barcodes_filename += '.txt'
     print(local_barcodes_filename)
     self.update_state(state="PROGRESS", meta={"position": "running" , "progress" : 20})
     barcodes = None
@@ -267,6 +275,7 @@ def generate_h5ad(self, qcparams, **kwargs):
     upload_list.append([local_barcode_filename, barcode_filename])
     upload_list.append([local_gene_filename, gene_filename])
     upload_list.append([local_matrix_filename, matrix_filename])
+
 
     f = open(pathBar, 'r')
     f.close()
