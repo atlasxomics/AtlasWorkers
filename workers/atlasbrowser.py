@@ -122,20 +122,19 @@ def generate_spatial(self, qcparams, **kwargs):
         name = vals[len(vals) - 1]
         if "flow" in i.lower() or "fix" in i.lower():
             path = str(figure_dir.joinpath(name))
-            print("old: " + i)
-            print("new: " + path)
             aws_s3.moveFile(bucket_name, i, path)
-        if 'postb' in i.lower():
+        elif 'postb_bsa' in i.lower():
             local_image_path = aws_s3.getFileObject(str(i))
-            if "bsa" in i.lower():
-                bsa_original = Image.open(str(local_image_path))
-                bsa_source = bsa_original
-                bsa_original.save(str(local_image_path))
-            else:
-                postB_original = Image.open(str(local_image_path))
-                postB_source = postB_original
-                postB_original.save(str(local_image_path))
-                self.update_state(state="PROGRESS", meta={"position": "running" , "progress" : 45})
+            bsa_original = Image.open(str(local_image_path))
+            bsa_source = bsa_original
+            bsa_original.save(str(local_image_path))
+            img_arr = np.array(bsa_original, np.uint8)
+            
+            postB_img_arr = img_arr[:, :, 2]
+            postB_original = Image.fromarray(postB_img_arr)
+            postB_source = postB_original
+
+            self.update_state(state="PROGRESS", meta={"position": "running" , "progress" : 45})
 
     
     if rotation != 0 :
@@ -152,7 +151,6 @@ def generate_spatial(self, qcparams, **kwargs):
     tempName_postB = local_figure_dir.joinpath("postB.tif")
     s3Name_bsa = figure_dir.joinpath("postB_BSA.tif")
     s3Name_postB = figure_dir.joinpath("postB.tif")
-    print("saving cropped image")
     cropped_bsa.save(tempName_bsa.__str__())
     cropped_postB.save(tempName_postB.__str__())
     # adding figure folder images to upload list
