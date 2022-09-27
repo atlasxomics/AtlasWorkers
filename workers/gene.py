@@ -50,8 +50,8 @@ def compute_qc(self, *args, **kwargs):
         else:
           adata2=adata
           adata2.X = -adata2.X
-          sc.tl.rank_genes_groups(adata, 'lasso', n_genes= 10, use_raw=False)
-          holder2 = pd.DataFrame(adata.uns['rank_genes_groups']['names'])
+          sc.tl.rank_genes_groups(adata2, 'lasso', n_genes= 10, use_raw=False)
+          holder2 = pd.DataFrame(adata2.uns['rank_genes_groups']['names'])
         out['top_selected'] = holder2['selected'].values.tolist()
         out['cluster_names'] = []
         out['top_ten'] = []
