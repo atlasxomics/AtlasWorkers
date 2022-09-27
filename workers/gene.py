@@ -32,7 +32,7 @@ def compute_qc(self, *args, **kwargs):
     aws_s3=utils.AWS_S3(config)
 
     self.update_state(state="STARTED")
-    filename,requested_genes, selected = args
+    filename,requested_genes, selected, rankGeneKey = args
     self.update_state(state="PROGRESS", meta={"position": "preparation" , "progress" : 0})
     downloaded_filename = aws_s3.getFileObject(filename)
     adata=sc.read(downloaded_filename)
@@ -44,8 +44,14 @@ def compute_qc(self, *args, **kwargs):
         for i in selected:
             lasso[i] = "selected"
         adata.obs["lasso"] = lasso
-        sc.tl.rank_genes_groups(adata, 'lasso', n_genes= 10, use_raw=False)
-        holder2 = pd.DataFrame(adata.uns['rank_genes_groups']['names'])
+        if rankGeneKey == 1:
+          sc.tl.rank_genes_groups(adata, 'lasso', n_genes= 10, use_raw=False)
+          holder2 = pd.DataFrame(adata.uns['rank_genes_groups']['names'])
+        else:
+          adata2=adata
+          adata2.X = -adata2.X
+          sc.tl.rank_genes_groups(adata, 'lasso', n_genes= 10, use_raw=False)
+          holder2 = pd.DataFrame(adata.uns['rank_genes_groups']['names'])
         out['top_selected'] = holder2['selected'].values.tolist()
         out['cluster_names'] = []
         out['top_ten'] = []
@@ -61,9 +67,16 @@ def compute_qc(self, *args, **kwargs):
         return out
     else:
         out['top_selected'] = holder2
-        adata.obs['clusters'] = adata.obs['clusters'].astype('category').values
-        sc.tl.rank_genes_groups(adata, 'clusters', n_genes= 10, use_raw=False)
-        holder = pd.DataFrame(adata.uns['rank_genes_groups']['names'])
+        if rankGeneKey == 1:
+          adata.obs['clusters'] = adata.obs['clusters'].astype('category').values
+          sc.tl.rank_genes_groups(adata, 'clusters', n_genes= 10, use_raw=False)
+          holder = pd.DataFrame(adata.uns['rank_genes_groups']['names'])
+        else:
+          adata2=adata
+          adata2.X = -adata2.X
+          adata2.obs['clusters'] = adata2.obs['clusters'].astype('category').values
+          sc.tl.rank_genes_groups(adata2, 'clusters', n_genes= 10, use_raw=False)
+          holder = pd.DataFrame(adata2.uns['rank_genes_groups']['names'])
         out['cluster_names'] = list(holder.columns)
         out['top_ten'] = holder.values.tolist()
         out['clusters']=adata.obs['clusters'].tolist()
