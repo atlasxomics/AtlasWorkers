@@ -32,7 +32,7 @@ def compute_qc(self, *args, **kwargs):
     aws_s3=utils.AWS_S3(config)
 
     self.update_state(state="STARTED")
-    filename,requested_genes, selected, rankGeneKey = args
+    filename, selected, rankGeneKey = args
     self.update_state(state="PROGRESS", meta={"position": "preparation" , "progress" : 0})
     downloaded_filename = aws_s3.getFileObject(filename)
     adata=sc.read(downloaded_filename)
@@ -54,21 +54,6 @@ def compute_qc(self, *args, **kwargs):
           holder2 = pd.DataFrame(adata2.uns['rank_genes_groups']['names'])
         out['top_selected'] = holder2['selected'].values.tolist()
         out['top_ten'] = []
-        self.update_state(state="PROGRESS", meta={"position": "Finishing" , "progress" : 100})
-        return out
-    else:
-        out['top_selected'] = holder2
-        if rankGeneKey == 1:
-          adata.obs['clusters'] = adata.obs['clusters'].astype('category').values
-          sc.tl.rank_genes_groups(adata, 'clusters', n_genes= 10, use_raw=False)
-          holder = pd.DataFrame(adata.uns['rank_genes_groups']['names'])
-        else:
-          adata2=adata.copy()
-          adata2.X = -adata2.X
-          adata2.obs['clusters'] = adata2.obs['clusters'].astype('category').values
-          sc.tl.rank_genes_groups(adata2, 'clusters', n_genes= 10, use_raw=False)
-          holder = pd.DataFrame(adata2.uns['rank_genes_groups']['names'])
-        out['top_ten'] = holder.values.tolist()
         self.update_state(state="PROGRESS", meta={"position": "Finishing" , "progress" : 100})
         return out
 
