@@ -32,7 +32,7 @@ def compute_qc(self, *args, **kwargs):
     aws_s3=utils.AWS_S3(config)
 
     self.update_state(state="STARTED")
-    filename,requested_genes, selected, rankGeneKey = args
+    filename, selected, rankGeneKey = args
     self.update_state(state="PROGRESS", meta={"position": "preparation" , "progress" : 0})
     downloaded_filename = aws_s3.getFileObject(filename)
     adata=sc.read(downloaded_filename)
@@ -53,48 +53,7 @@ def compute_qc(self, *args, **kwargs):
           sc.tl.rank_genes_groups(adata2, 'lasso', n_genes= 10, use_raw=False)
           holder2 = pd.DataFrame(adata2.uns['rank_genes_groups']['names'])
         out['top_selected'] = holder2['selected'].values.tolist()
-        out['cluster_names'] = []
         out['top_ten'] = []
-        out['clusters'] = []
-        out['coordinates'] = []
-        out['coordinates_umap'] = []
-        out['genes'] = {}
-        out['genes_summation'] = []
-        out['total_genes'] = []
-        out['TSS'] = []
-        out['frags'] = []
-        self.update_state(state="PROGRESS", meta={"position": "Finishing" , "progress" : 100})
-        return out
-    else:
-        out['top_selected'] = holder2
-        if rankGeneKey == 1:
-          adata.obs['clusters'] = adata.obs['clusters'].astype('category').values
-          sc.tl.rank_genes_groups(adata, 'clusters', n_genes= 10, use_raw=False)
-          holder = pd.DataFrame(adata.uns['rank_genes_groups']['names'])
-        else:
-          adata2=adata.copy()
-          adata2.X = -adata2.X
-          adata2.obs['clusters'] = adata2.obs['clusters'].astype('category').values
-          sc.tl.rank_genes_groups(adata2, 'clusters', n_genes= 10, use_raw=False)
-          holder = pd.DataFrame(adata2.uns['rank_genes_groups']['names'])
-        out['cluster_names'] = list(holder.columns)
-        out['top_ten'] = holder.values.tolist()
-        out['clusters']=adata.obs['clusters'].tolist()
-        out['coordinates']=adata.obsm['spatial'].tolist()
-        out['coordinates_umap']=adata.obsm['X_umap'].tolist()
-        out['genes']={}
-        out['genes_summation']=np.zeros(len(out['coordinates']))
-        out['total_genes'] = adata.var_names.to_list()
-        out['TSS'] = adata.obs['TSSEnrichment'].tolist()
-        out['frags'] = adata.obs['nFrags'].tolist()
-        for g_exp in requested_genes:
-            try:
-                out['genes'][g_exp]= list(map(lambda x: x[0],adata[:,g_exp].X.todense()))
-            except:
-                out['genes'][g_exp]= list(map(lambda x: x[0],adata[:,g_exp].X))
-        for k,v in out['genes'].items():
-            out['genes_summation']+=np.array(v)
-        out['genes_summation']=out['genes_summation'].tolist()
         self.update_state(state="PROGRESS", meta={"position": "Finishing" , "progress" : 100})
         return out
 
