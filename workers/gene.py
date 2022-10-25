@@ -36,6 +36,7 @@ def compute_qc(self, *args, **kwargs):
     self.update_state(state="PROGRESS", meta={"position": "preparation" , "progress" : 0})
     downloaded_filename = aws_s3.getFileObject(filename)
     adata=sc.read(downloaded_filename)
+    adata.X = adata.X - (adata.X.min() + 20)
     holder2 = []
     out={}
     if (len(selected) > 0):
@@ -50,6 +51,7 @@ def compute_qc(self, *args, **kwargs):
         else:
           adata2=adata.copy()
           adata2.X = -adata2.X
+          adata2.X = adata2.X - (adata2.X.min() + 20)
           sc.tl.rank_genes_groups(adata2, 'lasso', n_genes= 10, use_raw=False)
           holder2 = pd.DataFrame(adata2.uns['rank_genes_groups']['names'])
         out['top_selected'] = holder2['selected'].values.tolist()
