@@ -203,14 +203,14 @@ def generate_spatial(self, qcparams, **kwargs):
     f=open(local_tissue_positions_filename, 'w')
     csvwriter = csv.writer(f, delimiter=',',escapechar=' ',quoting=csv.QUOTE_NONE)
     for idx, b in enumerate(barcodes):
-        rowidx = int(idx/row_count)
-        colidx = idx % row_count
+        colidx = int(idx/row_count)
+        rowidx = idx % row_count
         keyindex = tixel_pos_list.index([rowidx,colidx])
         coord_x = tixel_positions[keyindex]['coordinates']['x']
         coord_y = tixel_positions[keyindex]['coordinates']['y']
         val = 0
         if tixel_positions[keyindex]['value'] : val = 1
-        datarow = [b, val, rowidx, colidx, coord_x , coord_y ]
+        datarow = [b, val, rowidx, colidx, coord_y , coord_x ]
         tissue_positions_list.append(datarow)    
         csvwriter.writerow(datarow)
     f.close()
