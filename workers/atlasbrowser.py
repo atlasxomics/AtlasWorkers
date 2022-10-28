@@ -206,8 +206,8 @@ def generate_spatial(self, qcparams, **kwargs):
         colidx = int(idx/row_count)
         rowidx = idx % row_count
         keyindex = tixel_pos_list.index([rowidx,colidx])
-        coord_x = tixel_positions[keyindex]['coordinates']['x']
-        coord_y = tixel_positions[keyindex]['coordinates']['y']
+        coord_x = int(round(tixel_positions[keyindex]['coordinates']['x']))
+        coord_y = int(round(tixel_positions[keyindex]['coordinates']['y']))
         val = 0
         if tixel_positions[keyindex]['value'] : val = 1
         datarow = [b, val, rowidx, colidx, coord_y , coord_x ]
