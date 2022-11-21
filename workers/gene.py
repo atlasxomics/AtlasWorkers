@@ -118,7 +118,7 @@ def compute_cell_type(self, *args, **kwargs):
     if numCluster >= 2:
       for i,j in sort.items():
         for num in range(1):
-          if int(scipy.stats.ttest_ind(adata[adata.obs["clusters"] == sort[i][num][0], i].X, adata[adata.obs["clusters"] == sort[i][num + 1][0], i].X, alternative="greater", trim=0.3)[0]) > 20:
+          if int(scipy.stats.ttest_ind(adata[adata.obs["clusters"] == sort[i][num][0], i].X, adata[adata.obs["clusters"] == sort[i][num + 1][0], i].X, alternative="greater", trim=0.3)[0]) > 2:
             for cell in marker_genes.keys():
               if i in marker_genes[cell]:
                 if i not in cellTypeTable.keys():
