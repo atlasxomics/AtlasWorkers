@@ -36,6 +36,8 @@ def compute_qc(self, *args, **kwargs):
     self.update_state(state="PROGRESS", meta={"position": "preparation" , "progress" : 0})
     downloaded_filename = aws_s3.getFileObject(filename)
     adata=sc.read(downloaded_filename)
+    if scipy.sparse.issparse(adata.X):
+      adata.X = adata.X.toarray()
     adata.X = adata.X - (adata.X.min() + 20)
     holder2 = []
     out={}
