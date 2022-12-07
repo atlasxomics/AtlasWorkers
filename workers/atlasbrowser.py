@@ -149,6 +149,7 @@ def generate_spatial(self, qcparams, **kwargs):
             path = str(figure_dir.joinpath(name))
             aws_s3.moveFile(bucket_name, i, path)
         elif 'postb_bsa' in i.lower():
+        elif f'{run_id}_postb_bsa.tif'.lower() in i.lower():
             local_image_path = aws_s3.getFileObject(str(i))
             bsa_original = Image.open(str(local_image_path))
             bsa_original.save(str(local_image_path))
