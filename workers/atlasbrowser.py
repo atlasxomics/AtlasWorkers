@@ -72,14 +72,11 @@ def generate_spatial(self, qcparams, **kwargs):
     tixel_positions = qcparams['mask']
     crop_coordinates = qcparams['crop_area']
     orientation = qcparams['orientation']
-    barcodes = qcparams['barcodes']
-    rotation = int(orientation['rotation'])
+    barcodes = qcparams.get('barcodes', 2)
+    rotation = (int(orientation['rotation']) % 360)
     # barcode_generation = metadata["barcode_version_generation"]
 
-    run_id_number = int(run_id[1:])
-    next_gen_barcodes = False
-    if run_id_number >= 895:
-        next_gen_barcodes = True
+    next_gen_barcodes = True
     
     metadata["replaced_24_barcodes"] = next_gen_barcodes
 
@@ -312,7 +309,6 @@ def generate_h5ad(self, qcparams, **kwargs):
             raise OSError(f"Could not find {res}_image'")
     self.update_state(state="PROGRESS", meta={"position": "running" , "progress" : 40})
     # read json scalefactors
-    print('good ole chum')
     adata.uns["spatial"]["0"]['scalefactors'] = json.loads(
         files['scalefactors_json_file'].read_bytes()
     )
