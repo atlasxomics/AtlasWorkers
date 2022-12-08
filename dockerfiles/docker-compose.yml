@@ -125,3 +125,26 @@ services:
       - RABBITMQ_HOST=root:atx!cloud!scalphunter@api.atlasxomics.com
       - REDIS_HOST=:atx!cloud!scalphunter@api.atlasxomics.com
     command: celery -A atlasbrowser worker -n atlasbrowser@${POSTFIX}  -Q atxcloud_atlasbrowser --concurrency=4 --loglevel=INFO
+  webfile-worker:
+    container_name: webfile-worker
+    working_dir: /worker_root/workers
+    # network_mode : host
+    image: atx-cloud
+    build: . 
+    user: 0:0
+    ipc: host
+    restart: always
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - /etc/group:/etc/group:ro
+      - /etc/passwd:/etc/passwd:ro
+      - /etc/shadow:/etc/shadow:ro
+      - /etc/sudoers:/stc/sudoers:ro
+      - /etc/sudoers.d:/etc/sudoers.d:ro 
+      - $PWD/..:/worker_root
+      - $HOME:$HOME
+    environment:
+      - TZ=America/New_York
+      - RABBITMQ_HOST=root:atx!cloud!scalphunter@api.atlasxomics.com
+      - REDIS_HOST=:atx!cloud!scalphunter@api.atlasxomics.com
+    command: celery -A webfile worker -n webfile@${POSTFIX}  -Q atxcloud_webfile --concurrency=4 --loglevel=INFO

@@ -1,0 +1,11 @@
+tasks:
+  webfiles.create_files:
+    description: Long task test with failed at 80%
+    target: Webfile
+    args:
+      -   name: metadata
+          value: null
+          type: object
+          caption: Metadata
+          description: Webfile exclusive task
+    kwargs: null
