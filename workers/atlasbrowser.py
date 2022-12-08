@@ -37,6 +37,19 @@ def task_list(self, *args, **kwargs):
     taskobject = yaml.safe_load(open(metafilename,'r'))
     return taskobject
 
+def rotate_image_no_cropping(img, degree):
+    (h, w) = img.shape[:2]
+    (cX, cY) = (w // 2, h // 2)
+    # rotate our image by 45 degrees around the center of the image
+    M = cv2.getRotationMatrix2D((cX, cY), degree, 1.0)
+    abs_cos = abs(M[0,0]) 
+    abs_sin = abs(M[0,1])
+    bound_w = int(h * abs_sin + w * abs_cos)
+    bound_h = int(h * abs_cos + w * abs_sin)
+    M[0, 2] += bound_w/2 - cX
+    M[1, 2] += bound_h/2 - cY
+    rotated = cv2.warpAffine(img, M, (bound_w, bound_h))
+    return rotated
 @app.task(bind=True)
 def generate_spatial(self, qcparams, **kwargs):
     self.update_state(state="STARTED")
@@ -59,14 +72,11 @@ def generate_spatial(self, qcparams, **kwargs):
     tixel_positions = qcparams['mask']
     crop_coordinates = qcparams['crop_area']
     orientation = qcparams['orientation']
-    barcodes = qcparams['barcodes']
-    rotation = int(orientation['rotation'])
+    barcodes = qcparams.get('barcodes', 2)
+    rotation = (int(orientation['rotation']) % 360)
     # barcode_generation = metadata["barcode_version_generation"]
 
-    run_id_number = int(run_id[1:])
-    next_gen_barcodes = False
-    if run_id_number >= 895:
-        next_gen_barcodes = True
+    next_gen_barcodes = True
     
     metadata["replaced_24_barcodes"] = next_gen_barcodes
 
@@ -117,7 +127,6 @@ def generate_spatial(self, qcparams, **kwargs):
         local_barcodes_filename += '-24.txt'
     else:
         local_barcodes_filename += '.txt'
-    print(local_barcodes_filename)
     self.update_state(state="PROGRESS", meta={"position": "running" , "progress" : 20})
     barcodes = None
     with open(local_barcodes_filename,'r') as f:
@@ -136,29 +145,25 @@ def generate_spatial(self, qcparams, **kwargs):
         if "flow" in i.lower() or "fix" in i.lower():
             path = str(figure_dir.joinpath(name))
             aws_s3.moveFile(bucket_name, i, path)
-        elif 'postb_bsa' in i.lower():
+        elif f'{run_id}_postb_bsa.tif'.lower() in i.lower():
             local_image_path = aws_s3.getFileObject(str(i))
             bsa_original = Image.open(str(local_image_path))
-            bsa_source = bsa_original
             bsa_original.save(str(local_image_path))
-            img_arr = np.array(bsa_original, np.uint8)
+            bsa_img_arr = np.array(bsa_original, np.uint8)
+
+            if rotation != 0 :
+                bsa_img_arr = rotate_image_no_cropping(bsa_img_arr, rotation)
             
-            postB_img_arr = img_arr[:, :, 2]
-            postB_original = Image.fromarray(postB_img_arr)
-            postB_source = postB_original
+            postB_img_arr = bsa_img_arr[:, :, 2]
+            postB_source = Image.fromarray(postB_img_arr)
+            bsa_source = Image.fromarray(bsa_img_arr)
 
             self.update_state(state="PROGRESS", meta={"position": "running" , "progress" : 45})
 
-    
-    if rotation != 0 :
-        rotate_bsa = bsa_source.rotate(rotation, expand = False)
-        bsa_source = rotate_bsa
-        rotate_postB = postB_source.rotate(rotation, expand=False)
-        postB_source = rotate_postB
-
-    ### generate cropped images using crop parameters
+    ## generate cropped images using crop parameters
     cropped_bsa = bsa_source.crop((crop_coordinates[0], crop_coordinates[1], crop_coordinates[2], crop_coordinates[3]))
     cropped_postB = postB_source.crop((crop_coordinates[0], crop_coordinates[1], crop_coordinates[2], crop_coordinates[3]))
+
     ## high resolution
     tempName_bsa = local_figure_dir.joinpath("postB_BSA.tif")
     tempName_postB = local_figure_dir.joinpath("postB.tif")
@@ -304,7 +309,6 @@ def generate_h5ad(self, qcparams, **kwargs):
             raise OSError(f"Could not find {res}_image'")
     self.update_state(state="PROGRESS", meta={"position": "running" , "progress" : 40})
     # read json scalefactors
-    print('good ole chum')
     adata.uns["spatial"]["0"]['scalefactors'] = json.loads(
         files['scalefactors_json_file'].read_bytes()
     )
