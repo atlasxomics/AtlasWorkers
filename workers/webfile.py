@@ -11,6 +11,7 @@ import csv
 import os
 from gzip import open as gzopen
 import utils
+import math
 
 app=Celery('webfile_task',broker='amqp://'+os.environ['RABBITMQ_HOST'],backend='redis://'+os.environ['REDIS_HOST'])
 
@@ -98,7 +99,7 @@ def create_files(self, qcparams, **kwargs):
     write = csv.writer(employee_file5)
     for i in range(adata2.n_obs):
       if not RNA_flag:
-        data = [adata2.obs['clusters'][i], adata2.obsm['spatial'][i].tolist(), adata2.obsm['X_umap'][i].tolist(), adata2.obs['TSSEnrichment'][i], adata2.obs['nFrags'][i]]
+        data = [adata.obs['clusters'][i], adata.obsm['spatial'][i][0].round(2), adata.obsm['spatial'][i][1].round(2), adata.obsm['X_umap'][i][0].round(2), adata.obsm['X_umap'][i][1].round(2), adata.obs['TSSEnrichment'][i].round(2), round(math.log10(adata.obs['nFrags'][i]),2)]
       else:
         data = [adata2.obs['clusters'][i], adata2.obsm['spatial'][i].tolist(), adata2.obsm['X_umap'][i].tolist(), adata2.obs['n_genes_by_counts'][i], adata2.obs['total_counts'][i]]
       write.writerow(data)
