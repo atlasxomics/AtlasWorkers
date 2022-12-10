@@ -99,9 +99,9 @@ def create_files(self, qcparams, **kwargs):
     write = csv.writer(employee_file5)
     for i in range(adata2.n_obs):
       if not RNA_flag:
-        data = [adata.obs['clusters'][i], adata.obsm['spatial'][i][0].round(2), adata.obsm['spatial'][i][1].round(2), adata.obsm['X_umap'][i][0].round(2), adata.obsm['X_umap'][i][1].round(2), adata.obs['TSSEnrichment'][i].round(2), round(math.log10(adata.obs['nFrags'][i]),2)]
+        data = [adata.obs['clusters'][i], adata.obsm['spatial'][i][0].round(1), adata.obsm['spatial'][i][1].round(1), adata.obsm['X_umap'][i][0].round(2), adata.obsm['X_umap'][i][1].round(2), adata.obs['TSSEnrichment'][i].round(2), round(math.log10(adata.obs['nFrags'][i]),2)]
       else:
-        data = [adata2.obs['clusters'][i], adata2.obsm['spatial'][i].tolist(), adata2.obsm['X_umap'][i].tolist(), adata2.obs['n_genes_by_counts'][i], adata2.obs['total_counts'][i]]
+        data = [adata2.obs['clusters'][i], adata.obsm['spatial'][i][0].round(1), adata.obsm['spatial'][i][1].round(1), adata.obsm['X_umap'][i][0].round(2), adata.obsm['X_umap'][i][1].round(2), adata2.obs['nFeature_Spatial'][i], adata2.obs['nCount_Spatial'][i]]
       write.writerow(data)
 
 
