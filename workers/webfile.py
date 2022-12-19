@@ -30,16 +30,13 @@ def creatingOneThousand(totalNum):
   indexList = []
   numberOfSplits = divmod(totalNum, 1000)
   left = 0
-  lastDigit = 0
   right = 0
   for i in range(numberOfSplits[0] + 1):
     if right >= totalNum: break
-    lastDigit = i - 1
     if totalNum < 999: indexList.append((0, totalNum))
-    elif i == 0: indexList.append((0, 999))
     else:
-      left = i * 1000 + lastDigit
-      right = i * 1000 + 1000 + lastDigit
+      left = i * 1000
+      right = left + 999
       if right <= totalNum: indexList.append((left, right))
       else: indexList.append((left, totalNum))
   return indexList
@@ -72,10 +69,10 @@ def create_files(self, qcparams, **kwargs):
     indexList = creatingOneThousand(adata.n_vars)
     for index in range(len(indexList)):
       sub = df.loc[indexList[index][0]:indexList[index][1]]
-      f = gzopen('{}/motifSummation{}.txt.gz'.format(path,index+1), 'wt')
+      f = gzopen('{}/summations/motifSummation{}.txt.gz'.format(path,index+1), 'wt')
       f.write(str(adata.n_obs)+'\n')
       f.close()
-      sub.to_csv('{}/motifSummation{}.txt.gz'.format(path,index+1), float_format='%7.2f', index=False, header=False, sep=',', mode='a', compression='gzip')
+      sub.to_csv('{}/summations/motifSummation{}.txt.gz'.format(path,index+1), float_format='%6.2f', index=False, header=False, sep=',', mode='a', compression='gzip')
     with gzopen('{}/motifNames.txt.gz'.format(path), 'wt') as employee_file2:
       for i in range(adata.n_vars):
         employee_file2.write(adata.var['mvp.variable'].index[i])
@@ -118,10 +115,10 @@ def create_files(self, qcparams, **kwargs):
   indexList = creatingOneThousand(adata2.n_vars)
   for index in range(len(indexList)):
     sub = df2.loc[indexList[index][0]:indexList[index][1]]
-    f2 = gzopen('{}/geneSummation{}.txt.gz'.format(path,index+1), 'wt')
+    f2 = gzopen('{}/summations/geneSummation{}.txt.gz'.format(path,index+1), 'wt')
     f2.write(str(adata2.n_obs)+'\n')
     f2.close()
-    sub.to_csv('{}/geneSummation{}.txt.gz'.format(path,index+1), float_format='%7.2f', index=False, header=False, sep=',', mode='a', compression='gzip')
+    sub.to_csv('{}/summations/geneSummation{}.txt.gz'.format(path,index+1), float_format='%6.2f', index=False, header=False, sep=',', mode='a', compression='gzip')
 
   with gzopen('{}/geneNames.txt.gz'.format(path), 'wt') as employee_file4:
     for i in range(adata2.n_vars):
