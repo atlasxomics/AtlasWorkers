@@ -12,6 +12,7 @@ import os
 from gzip import open as gzopen
 import utils
 import math
+from natsort import natsorted
 
 app=Celery('webfile_task',broker='amqp://'+os.environ['RABBITMQ_HOST'],backend='redis://'+os.environ['REDIS_HOST'])
 
@@ -24,6 +25,24 @@ def task_list(self, *args, **kwargs):
     metafilename = Path(__file__).stem+".yml"
     taskobject = yaml.safe_load(open(metafilename,'r'))
     return taskobject
+
+def creatingOneThousand(totalNum):
+  indexList = []
+  numberOfSplits = divmod(totalNum, 1000)
+  left = 0
+  lastDigit = 0
+  right = 0
+  for i in range(numberOfSplits[0] + 1):
+    if right >= totalNum: break
+    lastDigit = i - 1
+    if totalNum < 999: indexList.append((0, totalNum))
+    elif i == 0: indexList.append((0, 999))
+    else:
+      left = i * 1000 + lastDigit
+      right = i * 1000 + 1000 + lastDigit
+      if right <= totalNum: indexList.append((left, right))
+      else: indexList.append((left, totalNum))
+  return indexList
 
 @app.task(bind=True)
 def create_files(self, qcparams, **kwargs):
@@ -50,10 +69,13 @@ def create_files(self, qcparams, **kwargs):
     if scipy.sparse.issparse(adata.X):
       adata.X = adata.X.toarray()
     df = pd.DataFrame(adata.X.transpose())
-    f = gzopen('{}/motifSummation.txt.gz'.format(path), 'wt')
-    f.write(str(adata.n_obs)+'\n')
-    f.close()
-    df.to_csv('{}/motifSummation.txt.gz'.format(path), float_format='%7.2f', index=False, header=False, sep=',', mode='a', compression='gzip')
+    indexList = creatingOneThousand(adata.n_vars)
+    for index in range(len(indexList)):
+      sub = df.loc[indexList[index][0]:indexList[index][1]]
+      f = gzopen('{}/motifSummation{}.txt.gz'.format(path,index+1), 'wt')
+      f.write(str(adata.n_obs)+'\n')
+      f.close()
+      sub.to_csv('{}/motifSummation{}.txt.gz'.format(path,index+1), float_format='%7.2f', index=False, header=False, sep=',', mode='a', compression='gzip')
     with gzopen('{}/motifNames.txt.gz'.format(path), 'wt') as employee_file2:
       for i in range(adata.n_vars):
         employee_file2.write(adata.var['mvp.variable'].index[i])
@@ -64,7 +86,12 @@ def create_files(self, qcparams, **kwargs):
     adata.obs['clusters'] = adata.obs['clusters'].astype('category').values
     sc.tl.rank_genes_groups(adata, 'clusters', n_genes= 10, use_raw=False)
     holder = pd.DataFrame(adata.uns['rank_genes_groups']['names'])
-    jsonStruct[1] = holder.values.tolist()
+    nonSort  = list(holder.columns)
+    clusters = natsorted(nonSort)
+    jsonList = []
+    for i in clusters:
+      jsonList.append(list(holder[i].values))
+    jsonStruct[1] = jsonList
     
     adata2m=adata.copy()
     adata2m.X = -adata2m.X
@@ -72,7 +99,10 @@ def create_files(self, qcparams, **kwargs):
     adata2m.obs['clusters'] = adata2m.obs['clusters'].astype('category').values
     sc.tl.rank_genes_groups(adata2m, 'clusters', n_genes= 10, use_raw=False)
     holder2 = pd.DataFrame(adata2m.uns['rank_genes_groups']['names'])
-    jsonStruct[-1] = holder2.values.tolist()
+    jsonList = []
+    for i in clusters:
+      jsonList.append(list(holder2[i].values))
+    jsonStruct[-1] = jsonList
 
     with open("{}/topTen_motifs.json".format(path), "w") as outfile:
         json.dump(jsonStruct, outfile)
@@ -85,10 +115,13 @@ def create_files(self, qcparams, **kwargs):
   if scipy.sparse.issparse(adata2.X):
       adata2.X = adata2.X.toarray()
   df2 = pd.DataFrame(adata2.X.transpose())
-  f2 = gzopen('{}/geneSummation.txt.gz'.format(path), 'wt')
-  f2.write(str(adata2.n_obs)+'\n')
-  f2.close()
-  df2.to_csv('{}/geneSummation.txt.gz'.format(path), float_format='%7.2f', index=False, header=False, sep=',', mode='a', compression='gzip')
+  indexList = creatingOneThousand(adata2.n_vars)
+  for index in range(len(indexList)):
+    sub = df2.loc[indexList[index][0]:indexList[index][1]]
+    f2 = gzopen('{}/geneSummation{}.txt.gz'.format(path,index+1), 'wt')
+    f2.write(str(adata2.n_obs)+'\n')
+    f2.close()
+    sub.to_csv('{}/geneSummation{}.txt.gz'.format(path,index+1), float_format='%7.2f', index=False, header=False, sep=',', mode='a', compression='gzip')
 
   with gzopen('{}/geneNames.txt.gz'.format(path), 'wt') as employee_file4:
     for i in range(adata2.n_vars):
@@ -109,7 +142,12 @@ def create_files(self, qcparams, **kwargs):
     adata2.obs['clusters'] = adata2.obs['clusters'].astype('category').values
     sc.tl.rank_genes_groups(adata2, 'clusters', n_genes= 10, use_raw=False)
     holder3 = pd.DataFrame(adata.uns['rank_genes_groups']['names'])
-    jsonStruct2[1] = holder3.values.tolist()
+    nonSort  = list(holder.columns)
+    clusters = natsorted(nonSort)
+    jsonList = []
+    for i in clusters:
+      jsonList.append(list(holder3[i].values))
+    jsonStruct2[1] = jsonList
     
     adata2g=adata2.copy()
     adata2g.X = -adata2g.X
@@ -117,7 +155,10 @@ def create_files(self, qcparams, **kwargs):
     adata2g.obs['clusters'] = adata2g.obs['clusters'].astype('category').values
     sc.tl.rank_genes_groups(adata2g, 'clusters', n_genes= 10, use_raw=False)
     holder4 = pd.DataFrame(adata2g.uns['rank_genes_groups']['names'])
-    jsonStruct2[-1] = holder4.values.tolist()
+    jsonList = []
+    for i in clusters:
+      jsonList.append(list(holder4[i].values))
+    jsonStruct2[-1] = jsonList
 
     with open("{}/topTen_genes.json".format(path), "w") as outfile:
         json.dump(jsonStruct2, outfile)
