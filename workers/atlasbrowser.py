@@ -75,7 +75,8 @@ def generate_spatial(self, qcparams, **kwargs):
     barcodes = qcparams.get('barcodes', 2)
     rotation = (int(orientation['rotation']) % 360)
     bsa_filename = qcparams['bsa_filename']
-    # barcode_generation = metadata["barcode_version_generation"]
+    
+    updating_existing = qcparams.get('updating_existing', False)
 
     next_gen_barcodes = True
     
@@ -112,7 +113,7 @@ def generate_spatial(self, qcparams, **kwargs):
     local_spatial_dir.mkdir(parents=True, exist_ok=True)
     local_figure_dir = Path(temp_dir).joinpath(figure_dir)
     local_figure_dir.mkdir(parents=True, exist_ok=True)
-    
+
     ### read barcodes information 
     row_count = 50
 
@@ -136,70 +137,72 @@ def generate_spatial(self, qcparams, **kwargs):
     local_metadata_filename = local_spatial_dir.joinpath('metadata.json')
     local_scalefactors_filename = local_spatial_dir.joinpath('scalefactors_json.json')
     json.dump(metadata, open(local_metadata_filename,'w'), indent=4,sort_keys=True)
-    # adding metadata and scalefactors to the list to be uploaded to S3 Bucket
     upload_list.append([local_metadata_filename,metadata_filename])
-    upload_list.append([local_scalefactors_filename,scalefactors_filename])
-    ### load image from s3
-    for i in allFiles:
-        vals = i.split("/")
-        name = vals[len(vals) - 1]
-        if "flow" in i.lower() or "fix" in i.lower():
-            path = str(figure_dir.joinpath(name))
-            aws_s3.moveFile(bucket_name, i, path)
-        elif bsa_filename == i:
-            local_image_path = aws_s3.getFileObject(str(i))
-            bsa_original = Image.open(str(local_image_path))
-            bsa_original.save(str(local_image_path))
-            bsa_img_arr = np.array(bsa_original, np.uint8)
-
-            if rotation != 0 :
-                bsa_img_arr = rotate_image_no_cropping(bsa_img_arr, rotation)
-            
-            postB_img_arr = bsa_img_arr[:, :, 2]
-            postB_source = Image.fromarray(postB_img_arr)
-            bsa_source = Image.fromarray(bsa_img_arr)
-
-            self.update_state(state="PROGRESS", meta={"position": "running" , "progress" : 45})
-
-    ## generate cropped images using crop parameters
-    cropped_bsa = bsa_source.crop((crop_coordinates[0], crop_coordinates[1], crop_coordinates[2], crop_coordinates[3]))
-    cropped_postB = postB_source.crop((crop_coordinates[0], crop_coordinates[1], crop_coordinates[2], crop_coordinates[3]))
-
-    ## high resolution
-    tempName_bsa = local_figure_dir.joinpath("postB_BSA.tif")
-    tempName_postB = local_figure_dir.joinpath("postB.tif")
-    s3Name_bsa = figure_dir.joinpath("postB_BSA.tif")
-    s3Name_postB = figure_dir.joinpath("postB.tif")
-    cropped_bsa.save(tempName_bsa.__str__())
-    cropped_postB.save(tempName_postB.__str__())
-    # adding figure folder images to upload list
-    upload_list.append([tempName_postB, s3Name_postB])
-    upload_list.append([tempName_bsa, s3Name_bsa])
-
-    height = cropped_postB.height
-    width = cropped_postB.width
-    self.update_state(state="PROGRESS", meta={"position": "running" , "progress" : 65})
-    if width > height:
-        factorHigh = 2000/width
-        factorLow = 600/width
-        high_res = cropped_postB.resize((2000, int(height * factorHigh)), Image.ANTIALIAS)
-        low_res = cropped_postB.resize((600, int(height * factorLow)), Image.ANTIALIAS)
-    else:
-        factorHigh = 2000/height
-        factorLow = 600/height
-        high_res = cropped_postB.resize((int(width*factorHigh), 2000), Image.ANTIALIAS)
-        low_res = cropped_postB.resize((int(width*factorLow), 600), Image.ANTIALIAS)
-
-    local_hires_image_path = local_spatial_dir.joinpath('tissue_hires_image.png')
-    local_lowres_image_path = local_spatial_dir.joinpath('tissue_lowres_image.png')
-    high_res.save(local_hires_image_path.__str__())
-    low_res.save(local_lowres_image_path.__str__())
-    scalefactors["tissue_hires_scalef"] = factorHigh
-    scalefactors["tissue_lowres_scalef"] = factorLow
+    # adding metadata and scalefactors to the list to be uploaded to S3 Bucket
     
-    json.dump(scalefactors, open(local_scalefactors_filename,'w'), indent=4,sort_keys=True)
-    upload_list.append([local_hires_image_path, tissue_hires_image_filename])
-    upload_list.append([local_lowres_image_path, tissue_lowres_image_filename])
+    if not updating_existing:
+        upload_list.append([local_scalefactors_filename,scalefactors_filename])
+    ### load image from s3
+        for i in allFiles:
+            vals = i.split("/")
+            name = vals[len(vals) - 1]
+            if "flow" in i.lower() or "fix" in i.lower():
+                path = str(figure_dir.joinpath(name))
+                aws_s3.moveFile(bucket_name, i, path)
+            elif bsa_filename == i:
+                local_image_path = aws_s3.getFileObject(str(i))
+                bsa_original = Image.open(str(local_image_path))
+                bsa_original.save(str(local_image_path))
+                bsa_img_arr = np.array(bsa_original, np.uint8)
+
+                if rotation != 0 :
+                    bsa_img_arr = rotate_image_no_cropping(bsa_img_arr, rotation)
+                
+                postB_img_arr = bsa_img_arr[:, :, 2]
+                postB_source = Image.fromarray(postB_img_arr)
+                bsa_source = Image.fromarray(bsa_img_arr)
+
+        self.update_state(state="PROGRESS", meta={"position": "running" , "progress" : 45})
+
+        ## generate cropped images using crop parameters
+        cropped_bsa = bsa_source.crop((crop_coordinates[0], crop_coordinates[1], crop_coordinates[2], crop_coordinates[3]))
+        cropped_postB = postB_source.crop((crop_coordinates[0], crop_coordinates[1], crop_coordinates[2], crop_coordinates[3]))
+
+        ## high resolution
+        tempName_bsa = local_figure_dir.joinpath("postB_BSA.tif")
+        tempName_postB = local_figure_dir.joinpath("postB.tif")
+        s3Name_bsa = figure_dir.joinpath("postB_BSA.tif")
+        s3Name_postB = figure_dir.joinpath("postB.tif")
+        cropped_bsa.save(tempName_bsa.__str__())
+        cropped_postB.save(tempName_postB.__str__())
+        # adding figure folder images to upload list
+        upload_list.append([tempName_postB, s3Name_postB])
+        upload_list.append([tempName_bsa, s3Name_bsa])
+
+        height = cropped_postB.height
+        width = cropped_postB.width
+        self.update_state(state="PROGRESS", meta={"position": "running" , "progress" : 65})
+        if width > height:
+            factorHigh = 2000/width
+            factorLow = 600/width
+            high_res = cropped_postB.resize((2000, int(height * factorHigh)), Image.ANTIALIAS)
+            low_res = cropped_postB.resize((600, int(height * factorLow)), Image.ANTIALIAS)
+        else:
+            factorHigh = 2000/height
+            factorLow = 600/height
+            high_res = cropped_postB.resize((int(width*factorHigh), 2000), Image.ANTIALIAS)
+            low_res = cropped_postB.resize((int(width*factorLow), 600), Image.ANTIALIAS)
+
+        local_hires_image_path = local_spatial_dir.joinpath('tissue_hires_image.png')
+        local_lowres_image_path = local_spatial_dir.joinpath('tissue_lowres_image.png')
+        high_res.save(local_hires_image_path.__str__())
+        low_res.save(local_lowres_image_path.__str__())
+        scalefactors["tissue_hires_scalef"] = factorHigh
+        scalefactors["tissue_lowres_scalef"] = factorLow
+    
+        json.dump(scalefactors, open(local_scalefactors_filename,'w'), indent=4,sort_keys=True)
+        upload_list.append([local_hires_image_path, tissue_hires_image_filename])
+        upload_list.append([local_lowres_image_path, tissue_lowres_image_filename])
         
     self.update_state(state="PROGRESS", meta={"position": "running" , "progress" : 75})
     ### generate tissue_positions_list.csv
