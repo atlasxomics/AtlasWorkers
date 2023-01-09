@@ -74,6 +74,7 @@ def generate_spatial(self, qcparams, **kwargs):
     orientation = qcparams['orientation']
     barcodes = qcparams.get('barcodes', 2)
     rotation = (int(orientation['rotation']) % 360)
+    bsa_filename = qcparams['bsa_filename']
     # barcode_generation = metadata["barcode_version_generation"]
 
     next_gen_barcodes = True
@@ -145,7 +146,7 @@ def generate_spatial(self, qcparams, **kwargs):
         if "flow" in i.lower() or "fix" in i.lower():
             path = str(figure_dir.joinpath(name))
             aws_s3.moveFile(bucket_name, i, path)
-        elif f'{run_id}_postb_bsa.tif'.lower() in i.lower():
+        elif bsa_filename == i:
             local_image_path = aws_s3.getFileObject(str(i))
             bsa_original = Image.open(str(local_image_path))
             bsa_original.save(str(local_image_path))

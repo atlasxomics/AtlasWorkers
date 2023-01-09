@@ -10,3 +10,4 @@ RUN pip3 install opencv-python
 RUN apt-get install libgl1-mesa-glx -y
 RUN pip3 install scipy
 RUN pip3 install paramiko
+RUN pip3 install pymysql

@@ -147,4 +147,9 @@ services:
       - TZ=America/New_York
       - RABBITMQ_HOST=root:atx!cloud!scalphunter@api.atlasxomics.com
       - REDIS_HOST=:atx!cloud!scalphunter@api.atlasxomics.com
+      - MYSQL_USERNAME=root
+      - MYSQL_HOST=api.atlasxomics.com 
+      - MYSQL_DB=dbit_data
+      - MYSQL_PORT=3306
+      - MYSQL_PASSWORD=atx!cloud!pw
     command: celery -A webfile worker -n webfile@${POSTFIX}  -Q atxcloud_webfile --concurrency=4 --loglevel=INFO
