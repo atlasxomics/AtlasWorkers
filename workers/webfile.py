@@ -73,11 +73,12 @@ def write_join_table(cursor, job_id, tissue_id):
 def create_files(self, qcparams, **kwargs):
   username = kwargs.get('username', "")
   run_id = kwargs.get('run_id', "")
+  description = kwargs.get("description", "")
   cursor = db_connection.cursor()
   user_id, tissue_id = get_tissue_user_id(cursor, run_id, username)
   current_time = int(time.time() * 1000)
-  sql = """ INSERT INTO job_table (job_name, job_status, job_start_time, user_id) VALUES (%s, %s, %s, %s) """
-  tup = ("webfile.create_files", "INPROGRESS", current_time, user_id)
+  sql = """ INSERT INTO job_table (job_name, job_status, job_start_time, user_id, job_description) VALUES (%s, %s, %s, %s, %s) """
+  tup = ("webfile.create_files", "INPROGRESS", current_time, user_id, description)
   cursor.execute(sql, tup)
   db_connection.commit()
   job_id = cursor.lastrowid
