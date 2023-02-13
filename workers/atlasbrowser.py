@@ -96,7 +96,7 @@ def generate_spatial(self, qcparams, **kwargs):
                 print('Failed to delete ' + file_path + " due to " + e)
 
     ### source image path
-    allFiles = [i for i in oldFiles if '.json' not in i and 'spatial' not in i]
+    allFiles = [i for i in oldFiles if ('.json' not in i and 'spatial' not in i)]
     ### output directories (S3)
     spatial_dir = Path(root_dir).joinpath(run_id, 'spatial')
     figure_dir = Path(root_dir).joinpath(run_id, 'spatial', 'figure')
@@ -225,139 +225,20 @@ def generate_spatial(self, qcparams, **kwargs):
     f.close()
     self.update_state(state="PROGRESS", meta={"position": "Finishing" , "progress" : 80})
     upload_list.append([local_tissue_positions_filename, tissue_positions_filename])
-    ### concatenate tissue_positions_to gene expressions
     
-    tissue_position_list_umi_genes_list = []
+    #Generating compressed spatial folder
+    compressed_name = Path(temp_path).joinpath(f"{run_id}_compressed_spatial") #Create path to new file name, in the root/run_id dir
+    compressed_output_key_spatial = Path(root_dir).joinpath(run_id, f"{run_id}_compressed_spatial.zip") #Creating the path to the uploaded to aws, including .zip extension
+    shutil.make_archive( base_name=compressed_name, format='zip', root_dir = local_spatial_dir) #creating the zipped file
+    upload_path_zipped_spatial = Path(str(compressed_name) + ".zip") #Added the .zip extension back to the path for aws upload
+    upload_list.append([upload_path_zipped_spatial, compressed_output_key_spatial])
+    
     for local_filename, output_key in upload_list:
         #print("Copying {} to {}".format(local_filename, output_key))
         aws_s3.uploadFile(str(local_filename), str(output_key))
-        # if os.path.exists(str(local_filename)):
-        #   os.remove(str(local_filename))
-    #shutil.make_archive('spatialcomp', 'zip', local_spatial_dir)
+    
     self.update_state(state="PROGRESS", meta={"position": "Finished" , "progress" : 100})
     out=[list(map(str, x)) for x in upload_list]
     #print(len(out))
     return out
 
-
-@app.task(bind=True)
-def generate_h5ad(self, qcparams, **kwargs):
-    self.update_state(state="STARTED")
-    self.update_state(state="PROGRESS", meta={"position": "preparation" , "progress" : 0})
-    config=utils.load_configuration()
-    aws_s3=utils.AWS_S3(config)
-    #config
-    temp_dir = config['TEMP_DIRECTORY']
-    upload_list = []
-    #parameters
-    root_dir = qcparams['root_dir']
-    run_id = qcparams['run_id']
-
-    bar = Path(root_dir + '/'+ run_id + '/out/Gene/raw/barcodes.tsv')
-    pathBar = aws_s3.getFileObject(str(bar))
-    gene = Path(root_dir + '/'+ run_id + '/out/Gene/raw/features.tsv')
-    pathGene = aws_s3.getFileObject(str(gene))
-    matrix = Path(root_dir + '/'+ run_id + '/out/Gene/raw/matrix.mtx')
-    pathMatrix = aws_s3.getFileObject(str(matrix))
-
-    spatial_dir = Path(root_dir).joinpath(run_id,'spatial')
-    raw_dir = Path(root_dir).joinpath(run_id,'out','Gene','raw')
-    h5_dir = Path(root_dir).joinpath(run_id,'h5','obj')
-    barcode_filename = raw_dir.joinpath('barcodes.tsv')
-    gene_filename = raw_dir.joinpath('features.tsv')
-    matrix_filename = raw_dir.joinpath('matrix.mtx')
-    h5_filename = h5_dir.joinpath(f'{run_id}.h5ad')
-    ### local temp directories
-    local_spatial_dir = Path(temp_dir).joinpath(spatial_dir)
-    local_raw_dir = Path(temp_dir).joinpath(raw_dir)
-    local_raw_dir.mkdir(parents=True, exist_ok=True)
-    local_h5_dir = Path(temp_dir).joinpath(h5_dir)
-    local_h5_dir.mkdir(parents=True, exist_ok=True)
-
-    local_barcode_filename = local_raw_dir.joinpath('barcodes.tsv')
-    local_gene_filename = local_raw_dir.joinpath('features.tsv')
-    local_matrix_filename = local_raw_dir.joinpath('matrix.mtx')
-    local_h5ad_filename = local_h5_dir.joinpath(f'{run_id}.h5ad')
-    upload_list.append([local_h5ad_filename, h5_filename])
-    upload_list.append([local_barcode_filename, barcode_filename])
-    upload_list.append([local_gene_filename, gene_filename])
-    upload_list.append([local_matrix_filename, matrix_filename])
-
-
-    f = open(pathBar, 'r')
-    f.close()
-    g = open(pathGene, 'r')
-    g.close()
-    m = open(pathMatrix, 'r')
-    m.close()
-
-    path = Path(root_dir + '/'+ run_id + '/out/Gene/raw')
-    path2 = aws_s3.getFileObject(str(path))
-    adata = sc.read_10x_mtx(str(path2), make_unique="true", var_names="gene_symbols")
-    adata.uns["spatial"] = dict()
-    adata.uns["spatial"]["0"] = dict()
-    
-    files = dict(
-        tissue_positions_file = local_spatial_dir / 'tissue_positions_list.csv',
-        scalefactors_json_file = local_spatial_dir / 'scalefactors_json.json',
-        hires_image = local_spatial_dir / 'tissue_hires_image.png',
-        lowres_image = local_spatial_dir / 'tissue_lowres_image.png'
-    )
-    adata.uns["spatial"]["0"]['images'] = dict()
-    for res in ['hires', 'lowres']:
-        try:
-            adata.uns["spatial"]["0"]['images'][res] = imread(
-                str(files[f'{res}_image'])
-                )
-        except Exception:
-            raise OSError(f"Could not find {res}_image'")
-    self.update_state(state="PROGRESS", meta={"position": "running" , "progress" : 40})
-    # read json scalefactors
-    adata.uns["spatial"]["0"]['scalefactors'] = json.loads(
-        files['scalefactors_json_file'].read_bytes()
-    )
-    # read coordinates
-    positions = pd.read_csv(files['tissue_positions_file'], header=None)
-    positions.columns = [
-        'barcode',
-        'in_tissue',
-        'array_row',
-        'array_col',
-        'pxl_col_in_fullres',
-        'pxl_row_in_fullres',
-    ]
-        
-    positions.index = positions['barcode']
-
-    adata.obs = adata.obs.join(positions, how="left")
-
-    adata.obsm['spatial'] = adata.obs[
-        ['pxl_row_in_fullres', 'pxl_col_in_fullres']
-    ].to_numpy()
-            
-    adata.obs.drop(
-        columns=['barcode', 'pxl_row_in_fullres', 'pxl_col_in_fullres'],
-        inplace=True,
-    )
-    adata=adata[adata.obs['in_tissue']==1]
-    self.update_state(state="PROGRESS", meta={"position": "Finishing" , "progress" : 80})
-    sc.pp.filter_cells(adata, min_genes=50)
-    sc.pp.filter_genes(adata, min_cells=3)
-    adata.var['mt'] = adata.var_names.str.startswith(('mt-','MT-', 'Mt-'))  # annotate the group of mitochondrial genes as 'mt'
-    sc.pp.calculate_qc_metrics(adata, qc_vars=['mt'], percent_top=None, log1p=False, inplace=True)
-    adata = adata[adata.obs.pct_counts_mt < 30, :]
-    sc.pp.normalize_total(adata, target_sum= 1e6, exclude_highly_expressed=True)
-    sc.pp.log1p(adata)
-    sc.pp.highly_variable_genes(adata, min_mean=0.0125, max_mean=3, min_disp=0.5)
-    sc.pp.neighbors(adata, n_neighbors=10, n_pcs=25)
-    sc.tl.umap(adata, n_components=3)
-    sc.tl.leiden(adata, key_added="clusters")
-    adata.write(local_h5ad_filename)
-    for local_filename, output_key in upload_list:
-        aws_s3.uploadFile(str(local_filename), str(output_key))
-        if os.path.exists(str(local_filename)):
-            os.remove(str(local_filename))
-    self.update_state(state="PROGRESS", meta={"position": "Finished" , "progress" : 100})
-    out=[list(map(str, x)) for x in upload_list]
-    return out
-    
