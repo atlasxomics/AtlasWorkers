@@ -177,20 +177,20 @@ def create_files(self, qcparams, **kwargs):
       for i in range(adata2.n_obs):
         if not RNA_flag:
           if not multiSample:
-            data = [adata.obs['clusters'][i], adata.obsm['spatial'][i][0].round(1), adata.obsm['spatial'][i][1].round(1), adata.obsm['X_umap'][i][0].round(2), adata.obsm['X_umap'][i][1].round(2), adata.obs['TSSEnrichment'][i].round(2), round(math.log10(adata.obs['nFrags'][i]),2)]
+            data = [adata2.obs['clusters'][i], adata2.obsm['spatial'][i][0].round(1), adata2.obsm['spatial'][i][1].round(1), adata2.obsm['X_umap'][i][0].round(2), adata2.obsm['X_umap'][i][1].round(2), adata2.obs['TSSEnrichment'][i].round(2), round(math.log10(adata2.obs['nFrags'][i]),2)]
           else:
-            data = [adata2.obs['clusters'][i], adata.obsm['spatial'][i][0].round(1), adata.obsm['spatial'][i][1].round(1), adata.obsm['X_umap'][i][0].round(2), adata.obsm['X_umap'][i][1].round(2), adata.obs['TSSEnrichment'][i].round(2), round(math.log10(adata2.obs['nFrags'][i]),2), adata2.obs['Sample'][i], adata2.obs['Condition'][i]]
+            data = [adata2.obs['clusters'][i], adata2.obsm['spatial'][i][0].round(1), adata2.obsm['spatial'][i][1].round(1), adata2.obsm['X_umap'][i][0].round(2), adata2.obsm['X_umap'][i][1].round(2), adata2.obs['TSSEnrichment'][i].round(2), round(math.log10(adata2.obs['nFrags'][i]),2), adata2.obs['Sample'][i], adata2.obs['Condition'][i]]
         else:
           if not multiSample:
-            data = [adata2.obs['clusters'][i], adata.obsm['spatial'][i][0].round(1), adata.obsm['spatial'][i][1].round(1), adata.obsm['X_umap'][i][0].round(2), adata.obsm['X_umap'][i][1].round(2), adata2.obs['nFeature_Spatial'][i], adata2.obs['nCount_Spatial'][i]]
+            data = [adata2.obs['clusters'][i], adata2.obsm['spatial'][i][0].round(1), adata2.obsm['spatial'][i][1].round(1), adata2.obsm['X_umap'][i][0].round(2), adata2.obsm['X_umap'][i][1].round(2), adata2.obs['nFeature_Spatial'][i], adata2.obs['nCount_Spatial'][i]]
           else:
-            data = [adata2.obs['clusters'][i], adata.obsm['spatial'][i][0].round(1), adata.obsm['spatial'][i][1].round(1), adata.obsm['X_umap'][i][0].round(2), adata.obsm['X_umap'][i][1].round(2), adata2.obs['nFeature_Spatial'][i], adata2.obs['nCount_Spatial'][i], adata2.obs['Sample'][i], adata2.obs['Condition'][i]]
+            data = [adata2.obs['clusters'][i], adata2.obsm['spatial'][i][0].round(1), adata2.obsm['spatial'][i][1].round(1), adata2.obsm['X_umap'][i][0].round(2), adata2.obsm['X_umap'][i][1].round(2), adata2.obs['nFeature_Spatial'][i], adata2.obs['nCount_Spatial'][i], adata2.obs['Sample'][i], adata2.obs['Condition'][i]]
         write.writerow(data)
 
       adata2.X = adata2.X - adata2.X.min() + 1
       adata2.obs['clusters'] = adata2.obs['clusters'].astype('category').values
       sc.tl.rank_genes_groups(adata2, 'clusters', n_genes= 10, use_raw=False)
-      holder3 = pd.DataFrame(adata.uns['rank_genes_groups']['names'])
+      holder3 = pd.DataFrame(adata2.uns['rank_genes_groups']['names'])
       nonSort  = list(holder.columns)
       clusters = natsorted(nonSort)
       jsonList = []
