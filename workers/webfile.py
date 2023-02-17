@@ -100,7 +100,8 @@ def create_files(self, qcparams, **kwargs):
     jsonStruct2 = {}
     h5adPath = qcparams['aws_path']
     temp_dir = config['TEMP_DIRECTORY']
-    path = Path(temp_dir).joinpath(h5adPath)
+    h5_index = h5adPath.rfind('/obj')
+    path = Path(temp_dir).joinpath(h5adPath[:h5_index])
     RNA_flag = qcparams['rna_flag']
     
     # check that the path used in the next chunk exists
