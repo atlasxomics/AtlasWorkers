@@ -133,8 +133,13 @@ def create_files(self, qcparams, **kwargs):
       nonSort  = list(holder.columns)
       clusters = natsorted(nonSort)
       jsonList = []
-      for i in clusters:
-        jsonList.append(list(holder[i].values))
+      for i in range(10):
+        column = holder.loc[i]
+        columnList = []
+        for clust in natsorted(list(holder.columns)):
+          value = column[clust]
+          columnList.append(value)
+        jsonList.append(columnList)
       jsonStruct[1] = jsonList
       
       adata2m=adata.copy()
@@ -144,8 +149,13 @@ def create_files(self, qcparams, **kwargs):
       sc.tl.rank_genes_groups(adata2m, 'clusters', n_genes= 10, use_raw=False)
       holder2 = pd.DataFrame(adata2m.uns['rank_genes_groups']['names'])
       jsonList = []
-      for i in clusters:
-        jsonList.append(list(holder2[i].values))
+      for i in range(10):
+        column = holder2.loc[i]
+        columnList = []
+        for clust in natsorted(list(holder2.columns)):
+          value = column[clust]
+          columnList.append(value)
+        jsonList.append(columnList)
       jsonStruct[-1] = jsonList
 
       with open("{}/topTen_motifs.json".format(path), "w") as outfile:
@@ -192,11 +202,14 @@ def create_files(self, qcparams, **kwargs):
       adata2.obs['clusters'] = adata2.obs['clusters'].astype('category').values
       sc.tl.rank_genes_groups(adata2, 'clusters', n_genes= 10, use_raw=False)
       holder3 = pd.DataFrame(adata2.uns['rank_genes_groups']['names'])
-      nonSort  = list(holder.columns)
-      clusters = natsorted(nonSort)
       jsonList = []
-      for i in clusters:
-        jsonList.append(list(holder3[i].values))
+      for i in range(10):
+        column = holder3.loc[i]
+        columnList = []
+        for clust in natsorted(list(holder3.columns)):
+          value = column[clust]
+          columnList.append(value)
+        jsonList.append(columnList)
       jsonStruct2[1] = jsonList
       
       adata2g=adata2.copy()
@@ -206,8 +219,13 @@ def create_files(self, qcparams, **kwargs):
       sc.tl.rank_genes_groups(adata2g, 'clusters', n_genes= 10, use_raw=False)
       holder4 = pd.DataFrame(adata2g.uns['rank_genes_groups']['names'])
       jsonList = []
-      for i in clusters:
-        jsonList.append(list(holder4[i].values))
+      for i in range(10):
+        column = holder4.loc[i]
+        columnList = []
+        for clust in natsorted(list(holder4.columns)):
+          value = column[clust]
+          columnList.append(value)
+        jsonList.append(columnList)
       jsonStruct2[-1] = jsonList
 
       with open("{}/topTen_genes.json".format(path), "w") as outfile:
