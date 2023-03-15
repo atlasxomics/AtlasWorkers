@@ -36,8 +36,8 @@ def compute_qc(self, *args, **kwargs):
     self.update_state(state="PROGRESS", meta={"position": "preparation" , "progress" : 0})
     downloaded_filename = aws_s3.getFileObject(filename)
     small_check = None
-    if 'gene' in downloaded_filename:
-      small_check = downloaded_filename.replace('genes.h5ad', 'genes_s.h5ad')
+    if 'gene' in filename:
+      small_check = filename.replace('genes.h5ad', 'genes_s.h5ad')
       check = aws_s3.getFileObject(small_check)
       if check: downloaded_filename = small_check
       
