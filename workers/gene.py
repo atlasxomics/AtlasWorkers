@@ -39,7 +39,7 @@ def compute_qc(self, *args, **kwargs):
     if 'gene' in filename:
       small_check = filename.replace('genes.h5ad', 'genes_s.h5ad')
       check = aws_s3.getFileObject(small_check)
-      if check: downloaded_filename = small_check
+      if check: downloaded_filename = check
       
     adata=sc.read(downloaded_filename)
     if scipy.sparse.issparse(adata.X):
