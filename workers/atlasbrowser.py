@@ -102,7 +102,6 @@ def generate_spatial(self, qcparams, **kwargs):
                     "foo"
                     # os.unlink(file_path)
                 elif os.path.isdir(file_path):
-                    print(file_path)
                     shutil.rmtree(file_path)
             except Exception as e:
                 print('Failed to delete ' + file_path + " due to " + e)
@@ -128,8 +127,6 @@ def generate_spatial(self, qcparams, **kwargs):
     local_spatial_dir.mkdir(parents=True, exist_ok=True)
     local_figure_dir.mkdir(parents=True, exist_ok=True)
 
-    print(os.path.exists(str(local_figure_dir)))
-    print(os.path.exists(str(local_spatial_dir)))
     
     ### read barcodes information 
     row_count = math.sqrt(len(barcodes))
@@ -149,9 +146,7 @@ def generate_spatial(self, qcparams, **kwargs):
             name = vals[len(vals) - 1]
             
             if bsa_filename == i:
-                print(i)
                 bsa_path = Path(temp_dir).joinpath(i)
-                print("bsa_path: ", bsa_path)
                 bsa_original = Image.open(str(bsa_path))
                 bsa_img_arr = np.array(bsa_original, np.uint8)
                 if rotation != 0 :
