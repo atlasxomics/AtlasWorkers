@@ -92,19 +92,7 @@ def generate_spatial(self, qcparams, **kwargs):
     
     # metadata["replaced_24_barcodes"] = next_gen_barcodes
 
-    #remove all files from the temp folder. To allevaite bugs being caused by figure folder being generated using old images.
     temp_path = Path(temp_dir).joinpath(root_dir_spatial, run_id)
-    if os.path.exists(temp_path):
-        for filename in os.listdir(temp_path):
-            file_path = os.path.join(temp_path, filename)
-            try:
-                if os.path.isfile(file_path):
-                    "foo"
-                    # os.unlink(file_path)
-                elif os.path.isdir(file_path):
-                    shutil.rmtree(file_path)
-            except Exception as e:
-                print('Failed to delete ' + file_path + " due to " + e)
 
     # Filtering the images that are in the current bsa directory to ensure they don't include contents of spatial folder
     allFiles = [i for i in oldFiles if ('.json' not in i and 'spatial' not in i)]
