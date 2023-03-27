@@ -18,8 +18,6 @@ import traceback
 from natsort import natsorted
 
 app=Celery('webfile_task',broker='amqp://'+os.environ['RABBITMQ_HOST'],backend='redis://'+os.environ['REDIS_HOST'])
-db_connection = pymysql.connect(host=os.environ['MYSQL_HOST'], user=os.environ['MYSQL_USERNAME'], port = int(os.environ["MYSQL_PORT"]), password=os.environ['MYSQL_PASSWORD'], db=os.environ['MYSQL_DB'])
-print(db_connection)
 @worker_process_init.connect()
 def on_worker_init(**_):
     print("WebFile Worker initiated")
@@ -63,7 +61,7 @@ def get_tissue_user_id(cursor, run_id, username):
     raise Exception("run id has no tissue id")
   return user_id, tissue_id
 
-def write_join_table(cursor, job_id, tissue_id):
+def write_join_table(cursor, job_id, tissue_id, db_connection):
   sql = """ INSERT INTO job_tissue_id_table (job_id, tissue_id) VALUES (%s, %s) """
   tup = (job_id, tissue_id)
   cursor.execute(sql, tup)
@@ -71,6 +69,7 @@ def write_join_table(cursor, job_id, tissue_id):
 
 @app.task(bind=True)
 def create_files(self, qcparams, **kwargs):
+  db_connection = pymysql.connect(host=os.environ['MYSQL_HOST'], user=os.environ['MYSQL_USERNAME'], port = int(os.environ["MYSQL_PORT"]), password=os.environ['MYSQL_PASSWORD'], db=os.environ['MYSQL_DB'])
   username = kwargs.get('username', "")
   run_id = kwargs.get('run_id', "")
   description = kwargs.get("description", "")
@@ -82,7 +81,7 @@ def create_files(self, qcparams, **kwargs):
   cursor.execute(sql, tup)
   db_connection.commit()
   job_id = cursor.lastrowid
-  write_join_table(cursor, job_id, tissue_id)
+  write_join_table(cursor, job_id, tissue_id, db_connection)
   try:
     aws_bucket = qcparams.get('bucket_name', None)
     self.update_state(state="STARTED")
