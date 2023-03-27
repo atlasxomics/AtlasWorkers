@@ -111,6 +111,7 @@ def create_files(self, qcparams, **kwargs):
       '''Begin to process the motif h5ad'''
       downloaded_filename_Motif = aws_s3.getFileObject('{}/motifs.h5ad'.format(h5adPath))
       adata=sc.read(downloaded_filename_Motif)
+      adata.__dict__['_raw'].__dict__['_var'] = adata.__dict__['_raw'].__dict__['_var'].rename(columns={'_index': 'features'})
       if scipy.sparse.issparse(adata.X):
         adata.X = adata.X.toarray()
       df = pd.DataFrame(adata.X.transpose())
@@ -123,7 +124,7 @@ def create_files(self, qcparams, **kwargs):
         sub.to_csv('{}/summations/motifSummation{}.txt.gz'.format(path,index+1), float_format='%6.2f', index=False, header=False, sep=',', mode='a', compression='gzip')
       with gzopen('{}/motifNames.txt.gz'.format(path), 'wt') as employee_file2:
         for i in range(adata.n_vars):
-          employee_file2.write(adata.var['mvp.variable'].index[i])
+          employee_file2.write(adata.var['features'].index[i])
           employee_file2.write(',')
           
       adata.X = adata.X - adata.X.min() + 1
@@ -166,6 +167,7 @@ def create_files(self, qcparams, **kwargs):
     '''Begin to process the gene h5ad'''
     downloaded_filename_Gene = aws_s3.getFileObject('{}/genes.h5ad'.format(h5adPath))
     adata2=sc.read(downloaded_filename_Gene)
+    adata2.__dict__['_raw'].__dict__['_var'] = adata2.__dict__['_raw'].__dict__['_var'].rename(columns={'_index': 'features'})
     multiSample = 'Sample' in adata2.obs and 'Condition' in adata2.obs
     if scipy.sparse.issparse(adata2.X):
         adata2.X = adata2.X.toarray()
@@ -180,7 +182,7 @@ def create_files(self, qcparams, **kwargs):
 
     with gzopen('{}/geneNames.txt.gz'.format(path), 'wt') as employee_file4:
       for i in range(adata2.n_vars):
-        employee_file4.write(adata2.var['vst.variable'].index[i])
+        employee_file4.write(adata2.var['features'].index[i])
         employee_file4.write(',')
         
     with gzopen('{}/data.csv.gz'.format(path), 'wt') as employee_file5:
@@ -193,9 +195,15 @@ def create_files(self, qcparams, **kwargs):
             data = [adata2.obs['clusters'][i], adata2.obsm['spatial'][i][0].round(1), adata2.obsm['spatial'][i][1].round(1), adata2.obsm['X_umap'][i][0].round(2), adata2.obsm['X_umap'][i][1].round(2), adata2.obs['TSSEnrichment'][i].round(2), round(math.log10(adata2.obs['nFrags'][i]),2), adata2.obs['Sample'][i], adata2.obs['Condition'][i]]
         else:
           if not multiSample:
-            data = [adata2.obs['clusters'][i], adata2.obsm['spatial'][i][0].round(1), adata2.obsm['spatial'][i][1].round(1), adata2.obsm['X_umap'][i][0].round(2), adata2.obsm['X_umap'][i][1].round(2), adata2.obs['nFeature_Spatial'][i], adata2.obs['nCount_Spatial'][i]]
+            if 'C' in str(adata2.obs['clusters'][i]):
+              data = [adata2.obs['clusters'][i], adata2.obsm['spatial'][i][0].round(1), adata2.obsm['spatial'][i][1].round(1), adata2.obsm['X_umap'][i][0].round(2), adata2.obsm['X_umap'][i][1].round(2), adata2.obs['nFeature_Spatial'][i], adata2.obs['nCount_Spatial'][i]]
+            else:
+              data = ['C'+str(int(adata2.obs['clusters'][i]) + 1), adata2.obsm['spatial'][i][0].round(1), adata2.obsm['spatial'][i][1].round(1), adata2.obsm['X_umap'][i][0].round(2), adata2.obsm['X_umap'][i][1].round(2), adata2.obs['nFeature_Spatial'][i], adata2.obs['nCount_Spatial'][i]]
           else:
-            data = [adata2.obs['clusters'][i], adata2.obsm['spatial'][i][0].round(1), adata2.obsm['spatial'][i][1].round(1), adata2.obsm['X_umap'][i][0].round(2), adata2.obsm['X_umap'][i][1].round(2), adata2.obs['nFeature_Spatial'][i], adata2.obs['nCount_Spatial'][i], adata2.obs['Sample'][i], adata2.obs['Condition'][i]]
+            if 'C' in str(adata2.obs['clusters'][i]):
+              data = [adata2.obs['clusters'][i], adata2.obsm['spatial'][i][0].round(1), adata2.obsm['spatial'][i][1].round(1), adata2.obsm['X_umap'][i][0].round(2), adata2.obsm['X_umap'][i][1].round(2), adata2.obs['nFeature_Spatial'][i], adata2.obs['nCount_Spatial'][i], adata2.obs['Sample'][i], adata2.obs['Condition'][i]]
+            else:
+              data = ['C'+str(int(adata2.obs['clusters'][i]) + 1), adata2.obsm['spatial'][i][0].round(1), adata2.obsm['spatial'][i][1].round(1), adata2.obsm['X_umap'][i][0].round(2), adata2.obsm['X_umap'][i][1].round(2), adata2.obs['nFeature_Spatial'][i], adata2.obs['nCount_Spatial'][i], adata2.obs['Sample'][i], adata2.obs['Condition'][i]]
         write.writerow(data)
 
       adata2.X = adata2.X - adata2.X.min() + 1
@@ -232,7 +240,7 @@ def create_files(self, qcparams, **kwargs):
           json.dump(jsonStruct2, outfile)
 
       Path(downloaded_filename_Gene).unlink()
-      Path(downloaded_filename_Motif).unlink()
+      if not RNA_flag: Path(downloaded_filename_Motif).unlink()
 
 
     completion_time = int(time.time() * 1000)

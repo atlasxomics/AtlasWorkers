@@ -32,14 +32,19 @@ class AWS_S3:
 
     def getFileObject(self,filename, overwrite=False):
         try:
+          tf = self.checkFileExist(filename)
           temp_outpath=self.tempDirectory.joinpath(filename)
-          if temp_outpath.exists() and not overwrite: return str(temp_outpath)
-          temp_outpath.parent.mkdir(parents=True, exist_ok=True)
-          f=open(temp_outpath,'wb+')
-          self.aws_s3.download_fileobj(self.bucket_name,filename,f)
-          f.close()
-          return str(temp_outpath)
+          if tf:
+            if temp_outpath.exists() and not overwrite: return str(temp_outpath)
+            temp_outpath.parent.mkdir(parents=True, exist_ok=True)
+            f=open(temp_outpath,'wb+')
+            self.aws_s3.download_fileobj(self.bucket_name,filename,f)
+            f.close()
+            return str(temp_outpath)
+          else: 
+            if temp_outpath.exists() and not overwrite: return str(temp_outpath)
         except Exception as e:
+          print(e)
           return False
 
     def getFileList(self,root_path): #get all pages
