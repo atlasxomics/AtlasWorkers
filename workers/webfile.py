@@ -205,41 +205,41 @@ def create_files(self, qcparams, **kwargs):
               data = ['C'+str(int(adata2.obs['clusters'][i]) + 1), adata2.obsm['spatial'][i][0].round(1), adata2.obsm['spatial'][i][1].round(1), adata2.obsm['X_umap'][i][0].round(2), adata2.obsm['X_umap'][i][1].round(2), adata2.obs['nFeature_Spatial'][i], adata2.obs['nCount_Spatial'][i], adata2.obs['Sample'][i], adata2.obs['Condition'][i]]
         write.writerow(data)
 
-      adata2.X = adata2.X - adata2.X.min() + 1
-      adata2.obs['clusters'] = adata2.obs['clusters'].astype('category').values
-      sc.tl.rank_genes_groups(adata2, 'clusters', n_genes= 10, use_raw=False)
-      holder3 = pd.DataFrame(adata2.uns['rank_genes_groups']['names'])
-      jsonList = []
-      for i in range(10):
-        column = holder3.loc[i]
-        columnList = []
-        for clust in natsorted(list(holder3.columns)):
-          value = column[clust]
-          columnList.append(value)
-        jsonList.append(columnList)
-      jsonStruct2[1] = jsonList
-      
-      adata2g=adata2.copy()
-      adata2g.X = -adata2g.X
-      adata2g.X = adata2g.X - adata2g.X.min() + 1
-      adata2g.obs['clusters'] = adata2g.obs['clusters'].astype('category').values
-      sc.tl.rank_genes_groups(adata2g, 'clusters', n_genes= 10, use_raw=False)
-      holder4 = pd.DataFrame(adata2g.uns['rank_genes_groups']['names'])
-      jsonList = []
-      for i in range(10):
-        column = holder4.loc[i]
-        columnList = []
-        for clust in natsorted(list(holder4.columns)):
-          value = column[clust]
-          columnList.append(value)
-        jsonList.append(columnList)
-      jsonStruct2[-1] = jsonList
+    adata2.X = adata2.X - adata2.X.min() + 1
+    adata2.obs['clusters'] = adata2.obs['clusters'].astype('category').values
+    sc.tl.rank_genes_groups(adata2, 'clusters', n_genes= 10, use_raw=False)
+    holder3 = pd.DataFrame(adata2.uns['rank_genes_groups']['names'])
+    jsonList = []
+    for i in range(10):
+      column = holder3.loc[i]
+      columnList = []
+      for clust in natsorted(list(holder3.columns)):
+        value = column[clust]
+        columnList.append(value)
+      jsonList.append(columnList)
+    jsonStruct2[1] = jsonList
+    
+    adata2g=adata2.copy()
+    adata2g.X = -adata2g.X
+    adata2g.X = adata2g.X - adata2g.X.min() + 1
+    adata2g.obs['clusters'] = adata2g.obs['clusters'].astype('category').values
+    sc.tl.rank_genes_groups(adata2g, 'clusters', n_genes= 10, use_raw=False)
+    holder4 = pd.DataFrame(adata2g.uns['rank_genes_groups']['names'])
+    jsonList = []
+    for i in range(10):
+      column = holder4.loc[i]
+      columnList = []
+      for clust in natsorted(list(holder4.columns)):
+        value = column[clust]
+        columnList.append(value)
+      jsonList.append(columnList)
+    jsonStruct2[-1] = jsonList
 
-      with open("{}/topTen_genes.json".format(path), "w") as outfile:
-          json.dump(jsonStruct2, outfile)
+    with open("{}/topTen_genes.json".format(path), "w") as outfile:
+        json.dump(jsonStruct2, outfile)
 
-      Path(downloaded_filename_Gene).unlink()
-      if not RNA_flag: Path(downloaded_filename_Motif).unlink()
+    Path(downloaded_filename_Gene).unlink()
+    if not RNA_flag: Path(downloaded_filename_Motif).unlink()
 
 
     completion_time = int(time.time() * 1000)
