@@ -83,16 +83,23 @@ class AWS_S3:
         self.aws_s3.upload_file(str(filename),self.bucket_name,output_key)
         return output_key
 
-    def moveFile(self, bucket, from_path, to_path):
-        bucket_src = bucket + "/" + from_path
-        print(bucket_src)
+    def moveFile(self, from_bucket, to_bucket, from_path, to_path):
+        """Move a file in s3.
+
+        Args:
+            from_bucket string: name of bucket file is currently in
+            to_bucket string: name of bucket file is to be moved to
+            from_path string: path name file is currently
+            to_path string: path name file should move to
+        """
+        bucket_src = from_bucket + "/" + from_path
         res1 = self.aws_s3.copy_object(
             CopySource = bucket_src,
-            Bucket=bucket,
+            Bucket=to_bucket,
             Key=to_path
         )
         res2 = self.aws_s3.delete_object(
-            Bucket=bucket,
+            Bucket=from_bucket,
             Key=from_path
         )
 
