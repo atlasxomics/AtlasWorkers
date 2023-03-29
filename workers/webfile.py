@@ -123,7 +123,7 @@ def create_files(self, qcparams, **kwargs):
         sub.to_csv('{}/summations/motifSummation{}.txt.gz'.format(path,index+1), float_format='%6.2f', index=False, header=False, sep=',', mode='a', compression='gzip')
       with gzopen('{}/motifNames.txt.gz'.format(path), 'wt') as employee_file2:
         for i in range(adata.n_vars):
-          employee_file2.write(adata.var['features'].index[i])
+          employee_file2.write(adata.var['mvp.variable'].index[i])
           employee_file2.write(',')
           
       adata.X = adata.X - adata.X.min() + 1
@@ -166,7 +166,7 @@ def create_files(self, qcparams, **kwargs):
     '''Begin to process the gene h5ad'''
     downloaded_filename_Gene = aws_s3.getFileObject('{}/genes.h5ad'.format(h5adPath))
     adata2=sc.read(downloaded_filename_Gene)
-    adata2.__dict__['_raw'].__dict__['_var'] = adata2.__dict__['_raw'].__dict__['_var'].rename(columns={'_index': 'features'})
+    if RNA_flag:  adata2.__dict__['_raw'].__dict__['_var'] = adata2.__dict__['_raw'].__dict__['_var'].rename(columns={'_index': 'features'})
     multiSample = 'Sample' in adata2.obs and 'Condition' in adata2.obs
     if scipy.sparse.issparse(adata2.X):
         adata2.X = adata2.X.toarray()
@@ -181,7 +181,8 @@ def create_files(self, qcparams, **kwargs):
 
     with gzopen('{}/geneNames.txt.gz'.format(path), 'wt') as employee_file4:
       for i in range(adata2.n_vars):
-        employee_file4.write(adata2.var['features'].index[i])
+        if not RNA_flag:  employee_file4.write(adata2.var['vst.variable'].index[i])
+        else: employee_file4.write(adata2.var['features'].index[i])
         employee_file4.write(',')
         
     with gzopen('{}/data.csv.gz'.format(path), 'wt') as employee_file5:
