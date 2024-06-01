@@ -1,0 +1,11 @@
+tasks:
+  nuclei.generate_position_files:
+    description: Long task test with failed at 80%
+    target: Nuclei
+    args:
+      -   name: metadata
+          value: null
+          type: object
+          caption: Metadata
+          description: Nuclei exclusive task
+    kwargs: null

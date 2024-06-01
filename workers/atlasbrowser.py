@@ -74,7 +74,6 @@ def generate_spatial(self, qcparams, **kwargs):
     tixel_positions = qcparams['mask']
     crop_coordinates = qcparams['crop_area']
     orientation = qcparams['orientation']
-    barcodes = qcparams.get('barcodes', 2)
     rotation = (int(orientation['rotation']) % 360)
     bsa_filename = qcparams['bsa_filename']
     barcodes = qcparams["barcode_list"]
@@ -84,14 +83,6 @@ def generate_spatial(self, qcparams, **kwargs):
     config["S3_BUCKET_NAME"] =  bucket_name_spatial
     aws_s3_spatial = utils.AWS_S3(config)
     
-    config_bsa = config.copy()
-    config_bsa["S3_BUCKET_NAME"] = bucket_name_bsa
-    aws_s3_bsa = utils.AWS_S3(config_bsa)
-
-    # next_gen_barcodes = True
-    
-    # metadata["replaced_24_barcodes"] = next_gen_barcodes
-
     temp_path = Path(temp_dir).joinpath(root_dir_spatial, run_id)
 
     # Filtering the images that are in the current bsa directory to ensure they don't include contents of spatial folder
