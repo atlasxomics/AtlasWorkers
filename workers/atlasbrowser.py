@@ -140,11 +140,15 @@ def generate_spatial(self, qcparams, **kwargs):
                 if rotation != 0 :
                     bsa_img_arr = rotate_image_no_cropping(bsa_img_arr, rotation)
                 
-                postB_img_arr = bsa_img_arr[:, :, 2]
-                postB_source = Image.fromarray(postB_img_arr)
+                try:
+                    postB_img_arr = bsa_img_arr[:, :, 2]
+                    postB_source = Image.fromarray(postB_img_arr)
+                except:
+                    postB_source = Image.fromarray(bsa_img_arr)
+                
                 bsa_source = Image.fromarray(bsa_img_arr)
                 
-            elif "flow" in i.lower() or "fix" in i.lower():
+            elif "flow" in i.lower() or "fix" in i.lower() or "dapi":
                 path = str(figure_dir.joinpath(name))
                 aws_s3_spatial.moveFile(bucket_name_bsa,bucket_name_spatial, i, path)
 
